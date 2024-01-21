@@ -19,4 +19,4 @@ This project and everyone participating in it are governed by a Code of Conduct.
 ## Questions?
 If you have any questions or need further clarification, please open an issue for discussion.
 
-Thank you for contributing to ImagePixelatorWebApp!
+Thank you for contributing to Image Pixelator!
