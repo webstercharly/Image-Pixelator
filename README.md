@@ -1,7 +1,7 @@
 # Image Pixelator
 
 ## Overview
-`ImagePixelatorWebApp` is a user-friendly web tool that transforms regular images into stunning pixel art. Utilizing TailwindCSS for styling, it offers a sleek user interface for uploading images and adjusting pixelation parameters such as scale, bit depth, brightness, contrast, hue, saturation, and lightness. The application supports exporting the pixelated result as CSS shadow-based pixel art, providing a novel approach to creating pixel art directly from your browser.
+`Image Pixelator` is a user-friendly web tool that transforms regular images into stunning pixel art. Utilizing TailwindCSS for styling, it offers a sleek user interface for uploading images and adjusting pixelation parameters such as scale, bit depth, brightness, contrast, hue, saturation, and lightness. The application supports exporting the pixelated result as CSS shadow-based pixel art, providing a novel approach to creating pixel art directly from your browser.
 
 ## Features
 - Image upload and preview functionality.
@@ -9,7 +9,7 @@
 - Export functionality to convert pixel art into CSS shadow format.
 
 ## Getting Started
-To get started with `ImagePixelatorWebApp`, clone this repository and open `index.html` in your preferred modern web browser. No additional setup required!
+To get started with `Image Pixelator`, clone this repository and open `index.html` in your preferred modern web browser. No additional setup required!
 
 ## Usage
 1. **Select Image:** Upload an image file to start the pixelation process.
