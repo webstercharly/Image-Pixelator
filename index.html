@@ -20,56 +20,114 @@
       }
     </style>
   </head>
-  <body lass="bg-gray-100">
-    <div class="container mx-auto">
-      <h1 class="text-4xl font-bold mb-8">Image Pixelator</h1>
-      <div>
-        <label for="image-file" class="block text-lg font-semibold mb-2"
-          >Select Image:</label
-        >
-        <input
-          type="file"
-          id="image-file"
-          accept="image/*"
-          class="bg-white mb-6"
-        />
-      </div>
-      <div>
-        <button onclick="exportToCssShadowPixelImage()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Export to CSS Shadow Pixel Image</button>
+  <body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-6">
+      <h1 class="text-4xl font-bold mb-2">🎮 Image Pixelator</h1>
+      <p class="text-gray-600 mb-8">Gaming Asset Creator</p>
+
+      <div class="mb-6">
+        <label for="image-file" class="block text-lg font-semibold mb-2">Select Image:</label>
+        <input type="file" id="image-file" accept="image/*" class="bg-white mb-4 border rounded px-3 py-2" />
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label for="scale-slider" class="font-semibold">Scale:</label>
-          <input class="w-full" type="range" id="scale-slider" name="scale-slider" min="1" max="50" step="1" value="8" oninput="processFiles()" />
-          <label for="bit-depth-slider" class="font-semibold">Bit Depth:</label>
-          <input class="w-full" type="range" id="bit-depth-slider" name="bit-depth-slider" min="1" max="8" step="1" value="5" oninput="processFiles()" />
-          <label for="brightness-slider" class="font-semibold">Brightness:</label>
-          <input class="w-full" type="range" id="brightness-slider" name="brightness-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
-          <label for="contrast-slider" class="font-semibold">Contrast:</label>
-          <input class="w-full" type="range" id="contrast-slider" name="contrast-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
-        </div>
-        <div>
-          <label for="hue-slider" class="font-semibold">Hue:</label>
-          <input class="w-full" type="range" id="hue-slider" name="hue-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
-          <label for="saturation-slider" class="font-semibold">Saturation:</label>
-          <input class="w-full" type="range" id="saturation-slider" name="saturation-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
-          <label for="lightness-slider" class="font-semibold">Lightness:</label>
-          <input class="w-full" type="range" id="lightness-slider" name="lightness-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
+      <div class="bg-white p-4 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">⚙️ Settings</h2>
+
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-semibold text-lg mb-2">Pixelation</h3>
+            <label for="scale-slider" class="text-sm">Scale: <span id="scale-value">8</span></label>
+            <input class="w-full mb-3" type="range" id="scale-slider" name="scale-slider" min="1" max="50" step="1" value="8" />
+
+            <label for="palette-select" class="text-sm font-semibold">Color Palette:</label>
+            <select id="palette-select" class="w-full mb-3 border rounded px-2 py-1">
+              <option value="none">Free (Bit Depth)</option>
+              <option value="nes">NES (56 colors)</option>
+              <option value="gameboy">Game Boy (4 colors)</option>
+              <option value="gameboycolor">Game Boy Color (32 colors)</option>
+              <option value="pico8">PICO-8 (16 colors)</option>
+              <option value="commodore64">Commodore 64 (16 colors)</option>
+            </select>
+
+            <div id="bitdepth-container">
+              <label for="bit-depth-slider" class="text-sm">Bit Depth: <span id="bitdepth-value">5</span></label>
+              <input class="w-full mb-3" type="range" id="bit-depth-slider" name="bit-depth-slider" min="1" max="8" step="1" value="5" />
+            </div>
+
+            <h3 class="font-semibold text-lg mb-2 mt-4">Transparency</h3>
+            <label for="alpha-threshold-slider" class="text-sm">Alpha Threshold: <span id="alpha-value">5</span></label>
+            <input class="w-full mb-3" type="range" id="alpha-threshold-slider" name="alpha-threshold-slider" min="0" max="255" step="1" value="5" />
+
+            <label class="text-sm">
+              <input type="checkbox" id="show-grid" /> Show Grid
+            </label>
+            <select id="grid-size" class="ml-2 border rounded px-2 py-1 text-sm" disabled>
+              <option value="8">8×8</option>
+              <option value="16" selected>16×16</option>
+              <option value="32">32×32</option>
+              <option value="64">64×64</option>
+            </select>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-lg mb-2">Color Adjustments</h3>
+            <label for="brightness-slider" class="text-sm">Brightness: <span id="brightness-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="brightness-slider" name="brightness-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <label for="contrast-slider" class="text-sm">Contrast: <span id="contrast-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="contrast-slider" name="contrast-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <label for="hue-slider" class="text-sm">Hue: <span id="hue-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="hue-slider" name="hue-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <label for="saturation-slider" class="text-sm">Saturation: <span id="saturation-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="saturation-slider" name="saturation-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <label for="lightness-slider" class="text-sm">Lightness: <span id="lightness-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="lightness-slider" name="lightness-slider" min="-1" max="1" step="0.01" value="0" />
+          </div>
         </div>
       </div>
 
-      <div id="image-container" class="grid grid-cols-2 gap-4">
+      <div id="image-container" class="grid grid-cols-2 gap-4 mb-6">
         <div id="original-image-container" class="bg-white p-4 rounded shadow">
           <h2 class="text-xl font-semibold mb-4">Original Image</h2>
         </div>
         <div id="pixelated-image-container" class="bg-white p-4 rounded shadow">
           <h2 class="text-xl font-semibold mb-4">Pixelated Image</h2>
+          <div id="dimensions-info" class="text-sm text-gray-600 mt-2"></div>
         </div>
       </div>
-      
+
+      <div id="export-section" class="bg-white p-4 rounded shadow mb-6" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4">📤 Export</h2>
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 mb-2">Select export sizes:</p>
+          <label class="inline-block mr-4"><input type="checkbox" id="export-1x" checked> 1x</label>
+          <label class="inline-block mr-4"><input type="checkbox" id="export-2x" checked> 2x</label>
+          <label class="inline-block mr-4"><input type="checkbox" id="export-4x"> 4x</label>
+          <label class="inline-block mr-4"><input type="checkbox" id="export-8x"> 8x</label>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button id="download-1x" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Download 1x PNG</button>
+          <button id="download-2x" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Download 2x PNG</button>
+          <button id="download-4x" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Download 4x PNG</button>
+          <button id="download-8x" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Download 8x PNG</button>
+          <button id="download-all" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Download All Selected</button>
+        </div>
+      </div>
+
     </div>
     <script>
+      // Gaming Color Palettes
+      const PALETTES = {
+        nes: [[124,124,124],[0,0,252],[0,0,188],[68,40,188],[148,0,132],[168,0,32],[168,16,0],[136,20,0],[80,48,0],[0,120,0],[0,104,0],[0,88,0],[0,64,88],[0,0,0],[0,0,0],[0,0,0],[188,188,188],[0,120,248],[0,88,248],[104,68,252],[216,0,204],[228,0,88],[248,56,0],[228,92,16],[172,124,0],[0,184,0],[0,168,0],[0,168,68],[0,136,136],[0,0,0],[0,0,0],[0,0,0],[248,248,248],[60,188,252],[92,148,252],[204,136,252],[244,120,252],[248,116,176],[248,164,192],[240,208,176],[248,216,120],[184,248,24],[88,216,84],[88,248,152],[0,232,216],[120,120,120],[0,0,0],[0,0,0],[252,252,252],[164,228,252],[184,184,248],[216,184,248],[248,184,248],[248,164,192],[240,208,176],[252,224,168],[248,216,120],[216,248,120],[184,248,184],[184,248,216],[0,252,252],[248,216,248],[0,0,0],[0,0,0]],
+        gameboy: [[15,56,15],[48,98,48],[139,172,15],[155,188,15]],
+        gameboycolor: [[0,0,0],[52,104,86],[136,192,112],[224,248,208],[139,172,15],[155,188,15],[48,98,48],[15,56,15],[52,40,40],[92,80,80],[156,144,144],[220,216,216],[255,0,0],[255,127,0],[255,255,0],[0,255,0],[0,255,255],[0,0,255],[255,0,255],[255,184,248],[248,120,88],[152,120,248],[120,184,248],[184,248,248],[184,248,120],[248,216,120],[248,120,120],[184,0,0],[0,184,0],[0,0,184]],
+        pico8: [[0,0,0],[29,43,83],[126,37,83],[0,135,81],[171,82,54],[95,87,79],[194,195,199],[255,241,232],[255,0,77],[255,163,0],[255,236,39],[0,228,54],[41,173,255],[131,118,156],[255,119,168],[255,204,170]],
+        commodore64: [[0,0,0],[255,255,255],[136,0,0],[170,255,238],[204,68,204],[0,204,85],[0,0,170],[238,238,119],[221,136,85],[102,68,0],[255,119,119],[51,51,51],[119,119,119],[170,255,102],[0,136,255],[187,187,187]]
+      };
+
       const fileInput = document.getElementById('image-file');
       const scaleSlider = document.getElementById('scale-slider');
       const bitDepthSlider = document.getElementById('bit-depth-slider');
@@ -78,14 +136,16 @@
       const hueSlider = document.getElementById('hue-slider');
       const saturationSlider = document.getElementById('saturation-slider');
       const lightnessSlider = document.getElementById('lightness-slider');
-      const originalImageContainer = document.getElementById(
-        'original-image-container',
-      );
-      const pixelatedImageContainer = document.getElementById(
-        'pixelated-image-container',
-      );
+      const alphaThresholdSlider = document.getElementById('alpha-threshold-slider');
+      const paletteSelect = document.getElementById('palette-select');
+      const showGridCheckbox = document.getElementById('show-grid');
+      const gridSizeSelect = document.getElementById('grid-size');
+      const originalImageContainer = document.getElementById('original-image-container');
+      const pixelatedImageContainer = document.getElementById('pixelated-image-container');
+      const exportSection = document.getElementById('export-section');
 
       let sourceImageUrl;
+      let processedCanvas = null;
 
       fileInput.addEventListener('change', (e) => {
         processFiles(e.target.files);
@@ -133,20 +193,95 @@
         }
       });
 
+      alphaThresholdSlider.addEventListener('input', () => {
+        document.getElementById('alpha-value').textContent = alphaThresholdSlider.value;
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      paletteSelect.addEventListener('change', () => {
+        const bitdepthContainer = document.getElementById('bitdepth-container');
+        if (paletteSelect.value === 'none') {
+          bitdepthContainer.style.display = 'block';
+        } else {
+          bitdepthContainer.style.display = 'none';
+        }
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      showGridCheckbox.addEventListener('change', () => {
+        gridSizeSelect.disabled = !showGridCheckbox.checked;
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      gridSizeSelect.addEventListener('change', () => {
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      // Update slider value displays
+      scaleSlider.addEventListener('input', () => {
+        document.getElementById('scale-value').textContent = scaleSlider.value;
+      });
+      bitDepthSlider.addEventListener('input', () => {
+        document.getElementById('bitdepth-value').textContent = bitDepthSlider.value;
+      });
+      brightnessSlider.addEventListener('input', () => {
+        document.getElementById('brightness-value').textContent = parseFloat(brightnessSlider.value).toFixed(2);
+      });
+      contrastSlider.addEventListener('input', () => {
+        document.getElementById('contrast-value').textContent = parseFloat(contrastSlider.value).toFixed(2);
+      });
+      hueSlider.addEventListener('input', () => {
+        document.getElementById('hue-value').textContent = parseFloat(hueSlider.value).toFixed(2);
+      });
+      saturationSlider.addEventListener('input', () => {
+        document.getElementById('saturation-value').textContent = parseFloat(saturationSlider.value).toFixed(2);
+      });
+      lightnessSlider.addEventListener('input', () => {
+        document.getElementById('lightness-value').textContent = parseFloat(lightnessSlider.value).toFixed(2);
+      });
+
       function processFiles(files) {
-        originalImageContainer.innerHTML = '';
-        pixelatedImageContainer.innerHTML = '';
+        originalImageContainer.innerHTML = '<h2 class="text-xl font-semibold mb-4">Original Image</h2>';
+        pixelatedImageContainer.innerHTML = '<h2 class="text-xl font-semibold mb-4">Pixelated Image</h2>';
 
         for (const file of files) {
           if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
               sourceImageUrl = e.target.result;
+              exportSection.style.display = 'block';
               updateImages();
             };
             reader.readAsDataURL(file);
           }
         }
+      }
+
+      function findNearestPaletteColor(r, g, b, palette) {
+        let minDist = Infinity;
+        let nearest = palette[0];
+
+        for (const color of palette) {
+          const dist = Math.sqrt(
+            Math.pow(r - color[0], 2) +
+            Math.pow(g - color[1], 2) +
+            Math.pow(b - color[2], 2)
+          );
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = color;
+          }
+        }
+
+        return nearest;
       }
 
     function exportToCssShadowPixelImage() {
@@ -203,8 +338,10 @@
         const lightness = parseFloat(lightnessSlider.value);
         const scale = parseInt(scaleSlider.value);
         const bitDepth = parseInt(bitDepthSlider.value);
-        const brightness = parseInt(brightnessSlider.value);
-        const contrast = parseInt(contrastSlider.value);
+        const brightness = parseFloat(brightnessSlider.value);
+        const contrast = parseFloat(contrastSlider.value);
+        const alphaThreshold = parseInt(alphaThresholdSlider.value);
+        const selectedPalette = paletteSelect.value;
 
         const sourceImage = new Image();
         sourceImage.crossOrigin = 'Anonymous';
@@ -226,6 +363,7 @@
           adjustedImageData.data.set(originalImageData.data);
           applyBrightnessContrast(adjustedImageData, brightness, contrast);
           applyHSLAdjustments(adjustedImageData, hue, saturation, lightness);
+          applyAlphaThreshold(adjustedImageData, alphaThreshold);
           ctx.putImageData(adjustedImageData, 0, 0);
 
           const adjustedImageUrl = canvas.toDataURL();
@@ -233,27 +371,92 @@
             adjustedImageUrl,
             scale,
             bitDepth,
-            (pixelArtUrl) => {
-              displayImages(sourceImageUrl, pixelArtUrl);
+            selectedPalette,
+            alphaThreshold,
+            (pixelArtCanvas) => {
+              processedCanvas = pixelArtCanvas;
+              const pixelArtUrl = pixelArtCanvas.toDataURL();
+              displayImages(sourceImageUrl, pixelArtUrl, pixelArtCanvas.width, pixelArtCanvas.height);
             },
           );
         };
       }
 
-      function displayImages(originalUrl, pixelatedUrl) {
+      function displayImages(originalUrl, pixelatedUrl, width, height) {
         const originalImg = document.createElement('img');
         originalImg.alt = 'Original Image';
         originalImg.src = originalUrl;
         originalImg.className = 'w-full h-auto';
-        originalImageContainer.innerHTML = '';
+        originalImageContainer.innerHTML = '<h2 class="text-xl font-semibold mb-4">Original Image</h2>';
         originalImageContainer.appendChild(originalImg);
+
+        pixelatedImageContainer.innerHTML = '<h2 class="text-xl font-semibold mb-4">Pixelated Image</h2>';
+
+        // Create container for pixelated image with grid overlay
+        const pixelContainer = document.createElement('div');
+        pixelContainer.style.position = 'relative';
+        pixelContainer.style.display = 'inline-block';
 
         const pixelArtImg = document.createElement('img');
         pixelArtImg.alt = 'Pixel Art Image';
         pixelArtImg.src = pixelatedUrl;
         pixelArtImg.className = 'w-full h-auto';
-        pixelatedImageContainer.innerHTML = '';
-        pixelatedImageContainer.appendChild(pixelArtImg);
+        pixelArtImg.style.imageRendering = 'pixelated';
+        pixelContainer.appendChild(pixelArtImg);
+
+        // Add grid overlay if enabled
+        if (showGridCheckbox.checked) {
+          const gridSize = parseInt(gridSizeSelect.value);
+          const gridCanvas = document.createElement('canvas');
+          gridCanvas.width = width;
+          gridCanvas.height = height;
+          gridCanvas.style.position = 'absolute';
+          gridCanvas.style.top = '0';
+          gridCanvas.style.left = '0';
+          gridCanvas.style.width = '100%';
+          gridCanvas.style.height = '100%';
+          gridCanvas.style.pointerEvents = 'none';
+
+          const gridCtx = gridCanvas.getContext('2d');
+          gridCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+          gridCtx.lineWidth = 1;
+
+          for (let x = 0; x <= width; x += gridSize) {
+            gridCtx.beginPath();
+            gridCtx.moveTo(x, 0);
+            gridCtx.lineTo(x, height);
+            gridCtx.stroke();
+          }
+
+          for (let y = 0; y <= height; y += gridSize) {
+            gridCtx.beginPath();
+            gridCtx.moveTo(0, y);
+            gridCtx.lineTo(width, y);
+            gridCtx.stroke();
+          }
+
+          pixelContainer.appendChild(gridCanvas);
+        }
+
+        pixelatedImageContainer.appendChild(pixelContainer);
+
+        // Update dimensions info
+        const dimensionsInfo = document.createElement('div');
+        dimensionsInfo.className = 'text-sm text-gray-600 mt-2';
+        const gridSize = parseInt(gridSizeSelect.value);
+        const tilesX = Math.floor(width / gridSize);
+        const tilesY = Math.floor(height / gridSize);
+        dimensionsInfo.textContent = `${width}×${height} pixels (${tilesX}×${tilesY} tiles at ${gridSize}×${gridSize})`;
+        pixelatedImageContainer.appendChild(dimensionsInfo);
+      }
+
+      function applyAlphaThreshold(imageData, threshold) {
+        const data = imageData.data;
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < threshold) {
+            data[i] = 0;
+          }
+        }
       }
 
       function applyBrightnessContrast(imageData, brightness, contrast) {
@@ -269,7 +472,7 @@
         }
       }
 
-      function convertToPixelArt(imageUrl, scale, bitDepth, callback) {
+      function convertToPixelArt(imageUrl, scale, bitDepth, paletteName, alphaThreshold, callback) {
         const sourceImage = new Image();
         sourceImage.crossOrigin = 'Anonymous';
         sourceImage.src = imageUrl;
@@ -283,23 +486,30 @@
 
           ctx.drawImage(sourceImage, 0, 0, width, height);
 
+          const usePalette = paletteName !== 'none' && PALETTES[paletteName];
+
           for (let y = 0; y < height; y += scale) {
             for (let x = 0; x < width; x += scale) {
               const pixelData = ctx.getImageData(x, y, scale, scale);
-              const pixelColor = getAverageColor(pixelData);
-              const quantizedColor = quantizeColor(
-                pixelColor[0],
-                pixelColor[1],
-                pixelColor[2],
-                bitDepth,
-              );
-              ctx.fillStyle = `rgb(${quantizedColor[0]}, ${quantizedColor[1]}, ${quantizedColor[2]})`;
+              const avgColor = getAverageColor(pixelData);
+              const avgAlpha = getAverageAlpha(pixelData);
+
+              let finalColor;
+              if (usePalette) {
+                finalColor = findNearestPaletteColor(avgColor[0], avgColor[1], avgColor[2], PALETTES[paletteName]);
+              } else {
+                finalColor = quantizeColor(avgColor[0], avgColor[1], avgColor[2], bitDepth);
+              }
+
+              // Apply alpha threshold
+              const alpha = avgAlpha < alphaThreshold ? 0 : avgAlpha;
+
+              ctx.fillStyle = `rgba(${finalColor[0]}, ${finalColor[1]}, ${finalColor[2]}, ${alpha / 255})`;
               ctx.fillRect(x, y, scale, scale);
             }
           }
 
-          const pixelArtUrl = canvas.toDataURL();
-          callback(pixelArtUrl);
+          callback(canvas);
         };
       }
 
@@ -396,15 +606,100 @@
         return [r / count, g / count, b / count];
       }
 
+      function getAverageAlpha(imageData) {
+        let a = 0,
+          count = 0;
+        for (let i = 3; i < imageData.data.length; i += 4) {
+          a += imageData.data[i];
+          count++;
+        }
+        return a / count;
+      }
+
       function quantizeColor(r, g, b, bitDepth) {
-        const levels = Math.pow(2, bitDepth) - 1;
+        const levels = Math.pow(2, bitDepth);
         const step = 256 / levels;
-        const qr = Math.round(r / step) * step;
-        const qg = Math.round(g / step) * step;
-        const qb = Math.round(b / step) * step;
+        const qr = Math.floor(r / step) * step;
+        const qg = Math.floor(g / step) * step;
+        const qb = Math.floor(b / step) * step;
         return [qr, qg, qb];
       }
 
+      // Download functions
+      function downloadCanvasAsPNG(canvas, scale, filename) {
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = canvas.width * scale;
+        exportCanvas.height = canvas.height * scale;
+        const ctx = exportCanvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+
+        exportCanvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      }
+
+      function getFilenameBase() {
+        const scale = scaleSlider.value;
+        const palette = paletteSelect.value;
+        const bitDepth = bitDepthSlider.value;
+        let name = `pixelated_s${scale}`;
+        if (palette !== 'none') {
+          name += `_${palette}`;
+        } else {
+          name += `_b${bitDepth}`;
+        }
+        return name;
+      }
+
+      // Download button event listeners
+      document.getElementById('download-1x').addEventListener('click', () => {
+        if (processedCanvas) {
+          downloadCanvasAsPNG(processedCanvas, 1, `${getFilenameBase()}_1x.png`);
+        }
+      });
+
+      document.getElementById('download-2x').addEventListener('click', () => {
+        if (processedCanvas) {
+          downloadCanvasAsPNG(processedCanvas, 2, `${getFilenameBase()}_2x.png`);
+        }
+      });
+
+      document.getElementById('download-4x').addEventListener('click', () => {
+        if (processedCanvas) {
+          downloadCanvasAsPNG(processedCanvas, 4, `${getFilenameBase()}_4x.png`);
+        }
+      });
+
+      document.getElementById('download-8x').addEventListener('click', () => {
+        if (processedCanvas) {
+          downloadCanvasAsPNG(processedCanvas, 8, `${getFilenameBase()}_8x.png`);
+        }
+      });
+
+      document.getElementById('download-all').addEventListener('click', () => {
+        if (!processedCanvas) return;
+
+        const base = getFilenameBase();
+        const sizes = [];
+        if (document.getElementById('export-1x').checked) sizes.push(1);
+        if (document.getElementById('export-2x').checked) sizes.push(2);
+        if (document.getElementById('export-4x').checked) sizes.push(4);
+        if (document.getElementById('export-8x').checked) sizes.push(8);
+
+        sizes.forEach((size, index) => {
+          setTimeout(() => {
+            downloadCanvasAsPNG(processedCanvas, size, `${base}_${size}x.png`);
+          }, index * 200); // Stagger downloads to avoid browser issues
+        });
+      });
 
       </script>
   </body>
