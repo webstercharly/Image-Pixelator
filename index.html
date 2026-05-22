@@ -238,6 +238,8 @@
       let sourceImageUrl;
       let processedCanvas = null;
       let currentSettings = null;
+      let processingRequestId = 0; // Track latest processing request
+      let isGeneratingVariations = false; // Prevent concurrent variation generation
 
       fileInput.addEventListener('change', (e) => {
         processFiles(e.target.files);
@@ -424,6 +426,12 @@
       }
 
       function findNearestPaletteColor(r, g, b, palette) {
+        // Validate palette is non-empty array
+        if (!palette || !Array.isArray(palette) || palette.length === 0) {
+          console.warn('Invalid or empty palette, returning original color');
+          return [r, g, b];
+        }
+
         let minDist = Infinity;
         let nearest = palette[0];
 
@@ -453,6 +461,9 @@
         const alphaThreshold = parseInt(alphaThresholdSlider.value);
         const selectedPalette = paletteSelect.value;
         const ditheringMethod = ditheringSelect.value;
+
+        // Increment request ID to track latest request
+        const requestId = ++processingRequestId;
 
         // Store current settings for variations
         currentSettings = {
@@ -492,6 +503,11 @@
             alphaThreshold,
             ditheringMethod,
             (pixelArtCanvas) => {
+              // Only update if this is still the latest request (prevent stale overwrites)
+              if (requestId !== processingRequestId) {
+                return; // Discard stale result
+              }
+
               // Apply outline if enabled
               if (enableOutlineCheckbox.checked) {
                 pixelArtCanvas = applyOutline(pixelArtCanvas, parseInt(outlineThicknessSlider.value), outlineColorInput.value);
@@ -507,7 +523,7 @@
       }
 
       function updateBackgroundPreview() {
-        const pixelContainer = pixelatedImageContainer.querySelector('div');
+        const pixelContainer = pixelatedImageContainer.querySelector('.pixel-container');
         if (!pixelContainer) return;
 
         const bgValue = bgPreviewSelect.value;
@@ -545,6 +561,7 @@
 
         // Create container for pixelated image with grid overlay
         const pixelContainer = document.createElement('div');
+        pixelContainer.className = 'pixel-container';
         pixelContainer.style.position = 'relative';
         pixelContainer.style.display = 'inline-block';
         pixelContainer.style.padding = '10px';
@@ -794,10 +811,11 @@
 
       function quantizeColor(r, g, b, bitDepth) {
         const levels = Math.pow(2, bitDepth);
-        const step = 256 / levels;
-        const qr = Math.floor(r / step) * step;
-        const qg = Math.floor(g / step) * step;
-        const qb = Math.floor(b / step) * step;
+        const maxLevel = levels - 1;
+        // Map 0-255 to 0-(levels-1) then back to 0-255, preserving endpoints
+        const qr = Math.round(r / 255 * maxLevel) * (255 / maxLevel);
+        const qg = Math.round(g / 255 * maxLevel) * (255 / maxLevel);
+        const qb = Math.round(b / 255 * maxLevel) * (255 / maxLevel);
         return [qr, qg, qb];
       }
 
@@ -929,9 +947,16 @@
 
       // Outline function
       function applyOutline(canvas, thickness, color) {
+        // Create a new canvas to avoid modifying the original
+        const outputCanvas = document.createElement('canvas');
+        outputCanvas.width = canvas.width;
+        outputCanvas.height = canvas.height;
+        const outputCtx = outputCanvas.getContext('2d');
+
+        // Copy original image data
         const ctx = canvas.getContext('2d');
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
+        const data = new Uint8ClampedArray(imageData.data); // Create a copy of the data
         const width = canvas.width;
         const height = canvas.height;
 
@@ -944,7 +969,9 @@
             const alpha = data[idx + 3];
 
             // Check if this is an edge pixel (has alpha but neighbor doesn't)
-            if (alpha > 0) {
+            // Use threshold to catch semi-transparent boundaries
+            const alphaThreshold = 32;
+            if (alpha >= alphaThreshold) {
               let isEdge = false;
               for (let dy = -1; dy <= 1; dy++) {
                 for (let dx = -1; dx <= 1; dx++) {
@@ -952,7 +979,7 @@
                   const ny = y + dy;
                   if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
                     const nidx = (ny * width + nx) * 4;
-                    if (data[nidx + 3] === 0) {
+                    if (data[nidx + 3] < alphaThreshold) {
                       isEdge = true;
                       break;
                     }
@@ -989,8 +1016,10 @@
           }
         }
 
-        ctx.putImageData(imageData, 0, 0);
-        return canvas;
+        // Put modified data into output canvas
+        imageData.data.set(data);
+        outputCtx.putImageData(imageData, 0, 0);
+        return outputCanvas;
       }
 
       function hexToRgb(hex) {
@@ -1023,6 +1052,13 @@
       function generateVariations() {
         if (!currentSettings) return;
 
+        // Prevent concurrent generation
+        if (isGeneratingVariations) {
+          console.log('Variation generation already in progress');
+          return;
+        }
+
+        isGeneratingVariations = true;
         variationsPanel.style.display = 'block';
         const grid = document.getElementById('variations-grid');
         grid.innerHTML = '<p class="col-span-4 text-center text-gray-600">Generating variations...</p>';
@@ -1039,6 +1075,8 @@
         ];
 
         grid.innerHTML = '';
+        let completedCount = 0;
+        const totalVariations = variations.length;
 
         variations.forEach((variation, index) => {
           const variationDiv = document.createElement('div');
@@ -1075,6 +1113,12 @@
             variationDiv.appendChild(btnApply);
             variationDiv.appendChild(btnDownload);
             grid.appendChild(variationDiv);
+
+            // Track completion and reset flag when all done
+            completedCount++;
+            if (completedCount === totalVariations) {
+              isGeneratingVariations = false;
+            }
           });
         });
       }
@@ -1185,23 +1229,30 @@
 
       // Download functions
       function downloadCanvasAsPNG(canvas, scale, filename) {
-        const exportCanvas = document.createElement('canvas');
-        exportCanvas.width = canvas.width * scale;
-        exportCanvas.height = canvas.height * scale;
-        const ctx = exportCanvas.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+        return new Promise((resolve, reject) => {
+          const exportCanvas = document.createElement('canvas');
+          exportCanvas.width = canvas.width * scale;
+          exportCanvas.height = canvas.height * scale;
+          const ctx = exportCanvas.getContext('2d');
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
 
-        exportCanvas.toBlob((blob) => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 'image/png');
+          exportCanvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to create blob'));
+              return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            resolve();
+          }, 'image/png');
+        });
       }
 
       function getFilenameBase() {
@@ -1242,7 +1293,7 @@
         }
       });
 
-      document.getElementById('download-all').addEventListener('click', () => {
+      document.getElementById('download-all').addEventListener('click', async () => {
         if (!processedCanvas) return;
 
         const base = getFilenameBase();
@@ -1252,11 +1303,17 @@
         if (document.getElementById('export-4x').checked) sizes.push(4);
         if (document.getElementById('export-8x').checked) sizes.push(8);
 
-        sizes.forEach((size, index) => {
-          setTimeout(() => {
-            downloadCanvasAsPNG(processedCanvas, size, `${base}_${size}x.png`);
-          }, index * 200); // Stagger downloads to avoid browser issues
-        });
+        // Download sequentially to avoid race conditions
+        for (const size of sizes) {
+          try {
+            await downloadCanvasAsPNG(processedCanvas, size, `${base}_${size}x.png`);
+            // Small delay between downloads for browser stability
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (error) {
+            console.error(`Failed to download ${size}x:`, error);
+            // Continue with remaining downloads even if one fails
+          }
+        }
       });
 
       document.getElementById('export-css').addEventListener('click', () => {
