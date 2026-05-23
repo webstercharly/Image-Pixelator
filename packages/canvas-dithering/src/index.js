@@ -1,15 +1,8 @@
 /**
- * Canvas Dithering Algorithms
- *
  * Floyd-Steinberg, Atkinson, and Bayer dithering for Canvas ImageData.
- * Extracted from a pixel art converter - works with custom palettes.
- *
+ * All functions modify ImageData in place and also return it.
  * @module canvas-dithering
  */
-
-// NOTE: These modify ImageData in place - if you need the original, clone it first
-// TODO: Add Sierra, Stucki algorithms if there's demand
-// TODO: Maybe support larger Bayer matrices (8×8, 16×16)?
 
 /**
  * Find the nearest color in a palette using Euclidean distance

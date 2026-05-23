@@ -1,18 +1,12 @@
 /**
- * Retro Gaming Console Color Palettes
- *
- * Extracted from a pixel art tool - these are the actual RGB values
- * from gaming console hardware specs, not approximations.
- *
+ * Retro gaming console color palettes.
  * @module retro-palettes
  */
 
-// TODO: Add Atari 2600, Sega Genesis palettes
-// TODO: Maybe add alternative Game Boy palettes (Super Game Boy, etc.)
-
 /**
- * Nintendo Entertainment System (NES) - 54 colors
- * The iconic 8-bit console palette (1983-1995)
+ * Nintendo Entertainment System (NES) - 64 palette entries (52 unique colors)
+ * The hardware uses duplicate black entries in some slots, so the array
+ * has 64 entries but only 52 distinct colors.
  * @type {Array<[number, number, number]>}
  */
 const NES = [
@@ -43,8 +37,7 @@ const GAME_BOY = [
 ];
 
 /**
- * Game Boy Color - 32 colors
- * Enhanced handheld console palette (1998-2003)
+ * Game Boy Color - 30 colors (subset of the full 32K-color hardware capability)
  * @type {Array<[number, number, number]>}
  */
 const GAME_BOY_COLOR = [
@@ -96,7 +89,7 @@ const PALETTES = {
 const PALETTE_INFO = {
   nes: {
     name: 'Nintendo Entertainment System',
-    colors: 54,
+    colors: 64,
     year: '1983-1995',
     description: 'Iconic 8-bit console palette'
   },
@@ -108,7 +101,7 @@ const PALETTE_INFO = {
   },
   gameboycolor: {
     name: 'Game Boy Color',
-    colors: 32,
+    colors: 30,
     year: '1998-2003',
     description: 'Enhanced handheld palette'
   },

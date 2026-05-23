@@ -1,5 +1,6 @@
 /**
- * Test suite for canvas-dithering
+ * Tests for canvas-dithering
+ * Verifies algorithm correctness, not just "doesn't crash".
  */
 
 const {
@@ -11,10 +12,16 @@ const {
   quantizeColor
 } = require('../src/index.js');
 
-console.log('🧪 Testing canvas-dithering...\n');
+let failures = 0;
 
-// Helper to create test ImageData
-function createTestImageData(width, height, fillColor = [128, 128, 128, 255]) {
+function assert(condition, message) {
+  if (!condition) {
+    console.log('  FAIL: ' + message);
+    failures++;
+  }
+}
+
+function createImageData(width, height, fillColor = [128, 128, 128, 255]) {
   const data = new Uint8ClampedArray(width * height * 4);
   for (let i = 0; i < data.length; i += 4) {
     data[i] = fillColor[0];
@@ -22,146 +29,203 @@ function createTestImageData(width, height, fillColor = [128, 128, 128, 255]) {
     data[i + 2] = fillColor[2];
     data[i + 3] = fillColor[3];
   }
-  return {
-    data,
-    width,
-    height,
-    colorSpace: 'srgb'
-  };
+  return { data, width, height, colorSpace: 'srgb' };
 }
 
-// Test 1: Module exports
-console.log('✓ Test 1: All exports exist');
-console.assert(typeof floydSteinberg === 'function', 'floydSteinberg should be a function');
-console.assert(typeof atkinson === 'function', 'atkinson should be a function');
-console.assert(typeof bayer === 'function', 'bayer should be a function');
-console.assert(typeof dither === 'function', 'dither should be a function');
-console.assert(typeof findNearestColor === 'function', 'findNearestColor should be a function');
-console.assert(typeof quantizeColor === 'function', 'quantizeColor should be a function');
+function createGradient(width, height) {
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      const v = Math.floor((x / width) * 255);
+      data[idx] = v;
+      data[idx + 1] = v;
+      data[idx + 2] = v;
+      data[idx + 3] = 255;
+    }
+  }
+  return { data, width, height, colorSpace: 'srgb' };
+}
 
-// Test 2: Utility functions
-console.log('✓ Test 2: Utility functions work correctly');
+function pixelsInPalette(imageData, palette) {
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    if (imageData.data[i + 3] === 0) continue; // skip transparent
+    const r = imageData.data[i];
+    const g = imageData.data[i + 1];
+    const b = imageData.data[i + 2];
+    const found = palette.some(([pr, pg, pb]) => pr === r && pg === g && pb === b);
+    if (!found) return false;
+  }
+  return true;
+}
 
-// Test quantizeColor
-const q1 = quantizeColor(255, 255, 255, 3);
-console.assert(q1[0] === 255 && q1[1] === 255 && q1[2] === 255, 'White should quantize to white');
+console.log('canvas-dithering tests\n');
 
-const q2 = quantizeColor(0, 0, 0, 3);
-console.assert(q2[0] === 0 && q2[1] === 0 && q2[2] === 0, 'Black should quantize to black');
+// quantizeColor
+console.log('quantizeColor:');
+{
+  const white = quantizeColor(255, 255, 255, 3);
+  assert(white[0] === 255 && white[1] === 255 && white[2] === 255,
+    'white must remain white (255,255,255), got ' + JSON.stringify(white));
 
-// Test findNearestColor
-const testPalette = [[0, 0, 0], [255, 255, 255]];
-const n1 = findNearestColor(10, 10, 10, testPalette);
-console.assert(n1[0] === 0 && n1[1] === 0 && n1[2] === 0, 'Dark gray should map to black');
+  const black = quantizeColor(0, 0, 0, 3);
+  assert(black[0] === 0 && black[1] === 0 && black[2] === 0,
+    'black must remain black, got ' + JSON.stringify(black));
 
-const n2 = findNearestColor(200, 200, 200, testPalette);
-console.assert(n2[0] === 255 && n2[1] === 255 && n2[2] === 255, 'Light gray should map to white');
+  // 1-bit quantization: anything > 127 should round to 255, else 0
+  const high = quantizeColor(200, 200, 200, 1);
+  assert(high[0] === 255, '1-bit quantization of 200 should give 255, got ' + high[0]);
+  const low = quantizeColor(50, 50, 50, 1);
+  assert(low[0] === 0, '1-bit quantization of 50 should give 0, got ' + low[0]);
 
-// Test 3: Floyd-Steinberg dithering
-console.log('✓ Test 3: Floyd-Steinberg dithering');
-const imgFS = createTestImageData(10, 10);
-const resultFS = floydSteinberg(imgFS, { bitDepth: 3 });
-console.assert(resultFS.data instanceof Uint8ClampedArray, 'Should return ImageData');
-console.assert(resultFS.data.length === 400, 'Should have correct data length');
-
-// Test 4: Atkinson dithering
-console.log('✓ Test 4: Atkinson dithering');
-const imgAtk = createTestImageData(10, 10);
-const resultAtk = atkinson(imgAtk, { bitDepth: 3 });
-console.assert(resultAtk.data instanceof Uint8ClampedArray, 'Should return ImageData');
-console.assert(resultAtk.data.length === 400, 'Should have correct data length');
-
-// Test 5: Bayer dithering
-console.log('✓ Test 5: Bayer dithering');
-const imgBayer = createTestImageData(10, 10);
-const resultBayer = bayer(imgBayer, { bitDepth: 3 });
-console.assert(resultBayer.data instanceof Uint8ClampedArray, 'Should return ImageData');
-console.assert(resultBayer.data.length === 400, 'Should have correct data length');
-
-// Test 6: Dithering with palette
-console.log('✓ Test 6: Dithering with custom palette');
-const palette = [
-  [0, 0, 0],
-  [128, 128, 128],
-  [255, 255, 255]
-];
-const imgPal = createTestImageData(10, 10);
-const resultPal = floydSteinberg(imgPal, { palette });
-console.assert(resultPal.data instanceof Uint8ClampedArray, 'Should work with palette');
-
-// Verify colors are from palette
-let validColors = true;
-for (let i = 0; i < resultPal.data.length; i += 4) {
-  const r = resultPal.data[i];
-  const g = resultPal.data[i + 1];
-  const b = resultPal.data[i + 2];
-  const isInPalette = palette.some(([pr, pg, pb]) =>
-    pr === r && pg === g && pb === b
-  );
-  if (!isInPalette) {
-    validColors = false;
-    break;
+  // Quantized values must always be in [0, 255]
+  for (let v = 0; v <= 255; v += 7) {
+    const q = quantizeColor(v, v, v, 4);
+    assert(q[0] >= 0 && q[0] <= 255, `quantized value out of range: ${q[0]}`);
   }
 }
-console.assert(validColors, 'All colors should be from palette');
 
-// Test 7: dither() convenience function
-console.log('✓ Test 7: Convenience dither() function');
-const imgConv = createTestImageData(10, 10);
-const resultConv = dither(imgConv, 'floyd-steinberg', { bitDepth: 4 });
-console.assert(resultConv.data instanceof Uint8ClampedArray, 'Convenience function should work');
+// findNearestColor
+console.log('findNearestColor:');
+{
+  const palette = [[0, 0, 0], [255, 255, 255]];
+  const dark = findNearestColor(10, 10, 10, palette);
+  assert(dark[0] === 0, 'dark gray nearest should be black');
+  const light = findNearestColor(200, 200, 200, palette);
+  assert(light[0] === 255, 'light gray nearest should be white');
 
-// Test different methods
-dither(createTestImageData(10, 10), 'atkinson', { bitDepth: 4 });
-dither(createTestImageData(10, 10), 'bayer', { bitDepth: 4 });
-dither(createTestImageData(10, 10), 'none', { bitDepth: 4 });
+  // Exact match returns same color
+  const exact = findNearestColor(255, 0, 0, [[0, 0, 0], [255, 0, 0], [0, 0, 255]]);
+  assert(exact[0] === 255 && exact[1] === 0 && exact[2] === 0,
+    'exact color match should be returned');
 
-// Test 8: Transparency handling
-console.log('✓ Test 8: Transparency handling');
-const imgTransparent = createTestImageData(10, 10, [128, 128, 128, 0]); // Fully transparent
-const resultTrans = floydSteinberg(imgTransparent, { bitDepth: 3 });
-// Transparent pixels should remain unchanged
-console.assert(resultTrans.data[3] === 0, 'Alpha channel should be preserved');
+  // Empty palette returns input unchanged
+  const empty = findNearestColor(100, 150, 200, []);
+  assert(empty[0] === 100 && empty[1] === 150 && empty[2] === 200,
+    'empty palette returns input unchanged');
+}
 
-// Test 9: Edge cases
-console.log('✓ Test 9: Edge cases');
+// Floyd-Steinberg actually does something
+console.log('floydSteinberg:');
+{
+  // Gradient + 1-bit should produce a mix of black and white pixels (dithering)
+  // A constant function wouldn't produce both.
+  const img = createGradient(20, 20);
+  floydSteinberg(img, { bitDepth: 1 });
+  let hasBlack = false, hasWhite = false;
+  for (let i = 0; i < img.data.length; i += 4) {
+    if (img.data[i] === 0) hasBlack = true;
+    if (img.data[i] === 255) hasWhite = true;
+  }
+  assert(hasBlack && hasWhite, 'Floyd-Steinberg on gradient should produce both black and white pixels');
 
-// 1x1 image
-const tiny = createTestImageData(1, 1);
-floydSteinberg(tiny, { bitDepth: 3 });
-atkinson(tiny, { bitDepth: 3 });
-bayer(tiny, { bitDepth: 3 });
+  // Output with palette should only contain palette colors
+  const palette = [[0, 0, 0], [128, 128, 128], [255, 255, 255]];
+  const img2 = createGradient(20, 20);
+  floydSteinberg(img2, { palette });
+  assert(pixelsInPalette(img2, palette),
+    'Floyd-Steinberg output should only contain palette colors');
 
-// Empty palette
-const emptyPal = createTestImageData(10, 10);
-const emptyResult = floydSteinberg(emptyPal, { palette: [] });
-console.assert(emptyResult.data instanceof Uint8ClampedArray, 'Should handle empty palette');
+  // Modifies in place AND returns same object
+  const img3 = createImageData(5, 5);
+  const result = floydSteinberg(img3, { bitDepth: 3 });
+  assert(result === img3, 'floydSteinberg should return the same ImageData object');
+}
 
-// Test 10: Performance check
-console.log('✓ Test 10: Performance check');
-const largImg = createTestImageData(100, 100);
+// Atkinson
+console.log('atkinson:');
+{
+  const img = createGradient(20, 20);
+  atkinson(img, { bitDepth: 1 });
+  let hasBlack = false, hasWhite = false;
+  for (let i = 0; i < img.data.length; i += 4) {
+    if (img.data[i] === 0) hasBlack = true;
+    if (img.data[i] === 255) hasWhite = true;
+  }
+  assert(hasBlack && hasWhite, 'Atkinson on gradient should produce both black and white pixels');
 
-const startFS = Date.now();
-floydSteinberg(createTestImageData(100, 100), { bitDepth: 4 });
-const timeFS = Date.now() - startFS;
+  const palette = [[0, 0, 0], [255, 255, 255]];
+  const img2 = createGradient(20, 20);
+  atkinson(img2, { palette });
+  assert(pixelsInPalette(img2, palette),
+    'Atkinson output should only contain palette colors');
+}
 
-const startAtk = Date.now();
-atkinson(createTestImageData(100, 100), { bitDepth: 4 });
-const timeAtk = Date.now() - startAtk;
+// Bayer
+console.log('bayer:');
+{
+  const img = createGradient(20, 20);
+  bayer(img, { bitDepth: 1 });
+  let hasBlack = false, hasWhite = false;
+  for (let i = 0; i < img.data.length; i += 4) {
+    if (img.data[i] === 0) hasBlack = true;
+    if (img.data[i] === 255) hasWhite = true;
+  }
+  assert(hasBlack && hasWhite, 'Bayer on gradient should produce both black and white pixels');
 
-const startBay = Date.now();
-bayer(createTestImageData(100, 100), { bitDepth: 4 });
-const timeBay = Date.now() - startBay;
+  const palette = [[0, 0, 0], [255, 255, 255]];
+  const img2 = createGradient(20, 20);
+  bayer(img2, { palette });
+  assert(pixelsInPalette(img2, palette),
+    'Bayer output should only contain palette colors');
+}
 
-console.log(`\n⏱️  Performance (100×100 image):`);
-console.log(`  Floyd-Steinberg: ${timeFS}ms`);
-console.log(`  Atkinson: ${timeAtk}ms`);
-console.log(`  Bayer: ${timeBay}ms`);
+// Transparency
+console.log('transparency:');
+{
+  const img = createImageData(5, 5, [128, 128, 128, 0]); // fully transparent
+  floydSteinberg(img, { bitDepth: 3 });
+  // Transparent pixels should be skipped, RGB stays as input (or near it)
+  // Most importantly, alpha must be preserved
+  for (let i = 3; i < img.data.length; i += 4) {
+    assert(img.data[i] === 0, 'alpha 0 must remain 0 after dithering');
+  }
 
-console.log('\nAll tests passed!\n');
+  // Mixed: some opaque, some transparent
+  const mixed = createImageData(4, 1, [200, 200, 200, 255]);
+  // Make pixel 2 transparent
+  mixed.data[2 * 4 + 3] = 0;
+  const originalRgb = [mixed.data[2 * 4], mixed.data[2 * 4 + 1], mixed.data[2 * 4 + 2]];
+  floydSteinberg(mixed, { bitDepth: 1 });
+  // Transparent pixel's RGB should not be quantized to palette
+  // (it might receive diffused error, but it shouldn't be set to 0 or 255 directly)
+  assert(mixed.data[2 * 4 + 3] === 0, 'transparent pixel alpha preserved');
+}
 
-console.log('Available algorithms:');
-console.log('  - Floyd-Steinberg (error diffusion)');
-console.log('  - Atkinson (lighter, Mac-style)');
-console.log('  - Bayer (ordered, faster)');
-console.log('\nSupports custom palettes and bit depth reduction.');
+// dither() convenience
+console.log('dither():');
+{
+  const img = createImageData(5, 5);
+  const result = dither(img, 'floyd-steinberg', { bitDepth: 4 });
+  assert(result === img, 'dither should return input ImageData');
+
+  // 'none' should not modify the data
+  const img2 = createImageData(5, 5, [123, 45, 67, 255]);
+  dither(img2, 'none', {});
+  assert(img2.data[0] === 123 && img2.data[1] === 45 && img2.data[2] === 67,
+    "dither(_, 'none') should not modify pixel data");
+}
+
+// Edge cases
+console.log('edge cases:');
+{
+  // 1x1 image shouldn't crash
+  const tiny = createImageData(1, 1);
+  floydSteinberg(tiny, { bitDepth: 3 });
+  atkinson(tiny, { bitDepth: 3 });
+  bayer(tiny, { bitDepth: 3 });
+
+  // Empty palette is treated as no palette (falls back to input color)
+  const img = createImageData(5, 5);
+  const result = floydSteinberg(img, { palette: [] });
+  assert(result.data instanceof Uint8ClampedArray, 'empty palette should not crash');
+}
+
+console.log('');
+if (failures === 0) {
+  console.log('All tests passed.');
+  process.exit(0);
+} else {
+  console.log(`${failures} test(s) failed.`);
+  process.exit(1);
+}

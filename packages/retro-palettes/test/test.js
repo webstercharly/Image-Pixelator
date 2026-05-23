@@ -1,5 +1,6 @@
 /**
- * Simple test file to verify palettes load correctly
+ * Tests for retro-palettes
+ * Verifies palette data integrity, not just that exports exist.
  */
 
 const {
@@ -15,64 +16,70 @@ const {
   getPaletteInfo
 } = require('../src/index.js');
 
-console.log('🧪 Testing retro-palettes...\n');
+let failures = 0;
 
-// Test 1: Palette exports exist
-console.log('✓ Test 1: All palette exports exist');
-console.assert(Array.isArray(NES), 'NES should be an array');
-console.assert(Array.isArray(GAME_BOY), 'GAME_BOY should be an array');
-console.assert(Array.isArray(PICO_8), 'PICO_8 should be an array');
-
-// Test 2: Correct number of colors
-console.log('✓ Test 2: Correct color counts');
-console.assert(NES.length === 64, `NES should have 64 colors, got ${NES.length}`);
-console.assert(GAME_BOY.length === 4, `Game Boy should have 4 colors, got ${GAME_BOY.length}`);
-console.assert(PICO_8.length === 16, `PICO-8 should have 16 colors, got ${PICO_8.length}`);
-console.assert(COMMODORE_64.length === 16, `C64 should have 16 colors, got ${COMMODORE_64.length}`);
-
-// Test 3: RGB format validation
-console.log('✓ Test 3: RGB format is valid');
-function isValidRGB(color) {
-  return Array.isArray(color) &&
-    color.length === 3 &&
-    color.every(v => typeof v === 'number' && v >= 0 && v <= 255);
+function assert(condition, message) {
+  if (!condition) {
+    console.log('  FAIL: ' + message);
+    failures++;
+  }
 }
 
-NES.forEach((color, i) => {
-  console.assert(isValidRGB(color), `NES color ${i} should be valid RGB: ${color}`);
+function isValidRGB(color) {
+  return Array.isArray(color)
+    && color.length === 3
+    && color.every(v => Number.isInteger(v) && v >= 0 && v <= 255);
+}
+
+console.log('retro-palettes tests\n');
+
+console.log('Counts:');
+assert(NES.length === 64, `NES should have 64 entries, got ${NES.length}`);
+assert(GAME_BOY.length === 4, `GAME_BOY should have 4 entries, got ${GAME_BOY.length}`);
+assert(GAME_BOY_COLOR.length === 30, `GAME_BOY_COLOR should have 30 entries, got ${GAME_BOY_COLOR.length}`);
+assert(PICO_8.length === 16, `PICO_8 should have 16 entries, got ${PICO_8.length}`);
+assert(COMMODORE_64.length === 16, `COMMODORE_64 should have 16 entries, got ${COMMODORE_64.length}`);
+
+console.log('Metadata matches data:');
+assert(PALETTE_INFO.nes.colors === NES.length, 'NES metadata count must match data');
+assert(PALETTE_INFO.gameboy.colors === GAME_BOY.length, 'Game Boy metadata count must match data');
+assert(PALETTE_INFO.gameboycolor.colors === GAME_BOY_COLOR.length, 'GBC metadata count must match data');
+assert(PALETTE_INFO.pico8.colors === PICO_8.length, 'PICO-8 metadata count must match data');
+assert(PALETTE_INFO.commodore64.colors === COMMODORE_64.length, 'C64 metadata count must match data');
+
+console.log('RGB validity:');
+[['NES', NES], ['GAME_BOY', GAME_BOY], ['GAME_BOY_COLOR', GAME_BOY_COLOR],
+ ['PICO_8', PICO_8], ['COMMODORE_64', COMMODORE_64]].forEach(([name, palette]) => {
+  palette.forEach((color, i) => {
+    assert(isValidRGB(color), `${name}[${i}] is not valid RGB: ${JSON.stringify(color)}`);
+  });
 });
 
-// Test 4: PALETTES object
-console.log('✓ Test 4: PALETTES object structure');
-console.assert(typeof PALETTES === 'object', 'PALETTES should be an object');
-console.assert(PALETTES.nes === NES, 'PALETTES.nes should match NES export');
-console.assert(PALETTES.gameboy === GAME_BOY, 'PALETTES.gameboy should match GAME_BOY');
+// Known reference colors - if these change, the data has been corrupted
+console.log('Known reference values:');
+assert(GAME_BOY[0].join(',') === '15,56,15', 'Game Boy darkest green should be (15,56,15)');
+assert(GAME_BOY[3].join(',') === '155,188,15', 'Game Boy lightest green should be (155,188,15)');
+assert(PICO_8[0].join(',') === '0,0,0', 'PICO-8 color 0 should be black');
+assert(PICO_8[7].join(',') === '255,241,232', 'PICO-8 color 7 should be (255,241,232)');
+assert(COMMODORE_64[0].join(',') === '0,0,0', 'C64 color 0 should be black');
+assert(COMMODORE_64[1].join(',') === '255,255,255', 'C64 color 1 should be white');
 
-// Test 5: Helper functions
-console.log('✓ Test 5: Helper functions work');
-const names = getPaletteNames();
-console.assert(Array.isArray(names), 'getPaletteNames should return array');
-console.assert(names.includes('nes'), 'Should include "nes"');
-console.assert(names.includes('pico8'), 'Should include "pico8"');
+console.log('Helpers:');
+assert(getPalette('nes') === NES, "getPalette('nes') returns NES");
+assert(getPalette('nonexistent') === null, "getPalette of unknown name returns null");
+assert(getPaletteNames().length === 5, 'getPaletteNames returns 5 names');
+assert(getPaletteInfo('pico8').name === 'PICO-8', 'getPaletteInfo returns correct name');
+assert(getPaletteInfo('nonexistent') === null, 'getPaletteInfo of unknown returns null');
 
-const nesPalette = getPalette('nes');
-console.assert(nesPalette === NES, 'getPalette("nes") should return NES');
+console.log('Export consistency:');
+assert(PALETTES.nes === NES, 'PALETTES.nes is same reference as NES export');
+assert(PALETTES.gameboy === GAME_BOY, 'PALETTES.gameboy is same reference as GAME_BOY export');
 
-const invalidPalette = getPalette('playstation');
-console.assert(invalidPalette === null, 'Invalid palette should return null');
-
-// Test 6: Palette info
-console.log('✓ Test 6: Palette metadata');
-const nesInfo = getPaletteInfo('nes');
-console.assert(nesInfo.name === 'Nintendo Entertainment System', 'NES name should be correct');
-console.assert(nesInfo.colors === 54, 'NES should report 54 colors in metadata');
-
-console.log('\nAll tests passed!\n');
-
-// Display summary
-console.log('Palettes available:');
-getPaletteNames().forEach(name => {
-  const info = getPaletteInfo(name);
-  const palette = getPalette(name);
-  console.log(`  ${info.name}: ${palette.length} colors`);
-});
+console.log('');
+if (failures === 0) {
+  console.log('All tests passed.');
+  process.exit(0);
+} else {
+  console.log(`${failures} test(s) failed.`);
+  process.exit(1);
+}

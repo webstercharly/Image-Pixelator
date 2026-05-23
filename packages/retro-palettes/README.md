@@ -15,9 +15,9 @@ console.log(PALETTES.gameboy); // 4 shades of green
 
 ## Available palettes
 
-- `NES` - 54 colors
-- `GAME_BOY` - 4 colors  
-- `GAME_BOY_COLOR` - 32 colors
+- `NES` - 64 entries (52 unique - the hardware repeats blacks in some slots)
+- `GAME_BOY` - 4 colors
+- `GAME_BOY_COLOR` - 30 colors
 - `PICO_8` - 16 colors
 - `COMMODORE_64` - 16 colors
 
@@ -32,9 +32,7 @@ getPaletteNames(); // ['nes', 'gameboy', ...]
 getPalette('pico8'); // returns PICO_8 array
 ```
 
-That's it. Colors are `[r, g, b]` where each value is 0-255.
-
-TypeScript defs included.
+Colors are `[r, g, b]` where each value is 0-255. TypeScript defs included.
 
 ## License
 
