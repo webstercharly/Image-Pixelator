@@ -1,0 +1,47 @@
+{
+  "name": "canvas-dithering",
+  "version": "0.1.0",
+  "description": "Professional-grade dithering algorithms for Canvas ImageData (Floyd-Steinberg, Atkinson, Bayer)",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "keywords": [
+    "dithering",
+    "canvas",
+    "imagedata",
+    "floyd-steinberg",
+    "atkinson",
+    "bayer",
+    "image-processing",
+    "pixel-art",
+    "retro",
+    "quantization",
+    "error-diffusion",
+    "ordered-dithering",
+    "graphics",
+    "image",
+    "dither",
+    "halftone"
+  ],
+  "author": "Charly Webster",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webstercharly/canvas-dithering.git"
+  },
+  "bugs": {
+    "url": "https://github.com/webstercharly/canvas-dithering/issues"
+  },
+  "homepage": "https://github.com/webstercharly/canvas-dithering#readme",
+  "engines": {
+    "node": ">=10.0.0"
+  }
+}

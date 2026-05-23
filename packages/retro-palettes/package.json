@@ -1,0 +1,46 @@
+{
+  "name": "retro-palettes",
+  "version": "0.1.0",
+  "description": "Historically accurate color palettes from classic gaming consoles (NES, Game Boy, PICO-8, C64, GBC)",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "keywords": [
+    "palette",
+    "color",
+    "retro",
+    "gaming",
+    "nes",
+    "gameboy",
+    "pico-8",
+    "commodore-64",
+    "pixel-art",
+    "8-bit",
+    "16-bit",
+    "game-development",
+    "graphics",
+    "colors",
+    "rgb",
+    "console"
+  ],
+  "author": "Charly Webster",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webstercharly/retro-palettes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/webstercharly/retro-palettes/issues"
+  },
+  "homepage": "https://github.com/webstercharly/retro-palettes#readme",
+  "engines": {
+    "node": ">=10.0.0"
+  }
+}

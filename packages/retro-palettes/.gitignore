@@ -6,6 +6,3 @@ node_modules/
 *.swp
 *.swo
 .npm/
-test-demo.js
-package-lock.json
-package.json
