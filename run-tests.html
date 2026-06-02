@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Pixelator - Automated Tests</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 {
+            color: #4ec9b0;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #252526;
+            border-left: 4px solid #007acc;
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 5px;
+            font-size: 14px;
+        }
+        .pass {
+            color: #4ec9b0;
+        }
+        .fail {
+            color: #f48771;
+        }
+        .warning {
+            color: #dcdcaa;
+        }
+        .info {
+            color: #9cdcfe;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #3c3c3c;
+            margin: 20px 0;
+            background: white;
+        }
+        #results {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+        }
+        .summary {
+            background: #3c3c3c;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Image Pixelator - Automated Test Suite</h1>
+
+    <div class="summary">
+        <strong>Quick Info:</strong>
+        <div id="summary">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button onclick="runAllTests()">▶ Run All Tests</button>
+        <button onclick="openInNewTab()">🔗 Open App in New Tab</button>
+        <button onclick="clearResults()">🗑️ Clear Results</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Live Preview</h2>
+        <iframe id="app-frame" src="index.html"></iframe>
+    </div>
+
+    <script>
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            warnings: 0
+        };
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const className = type;
+            const icon = type === 'pass' ? '✓' : type === 'fail' ? '✗' : type === 'warning' ? '⚠' : 'ℹ';
+            results.innerHTML += `<div class="test-item ${className}">${icon} ${message}</div>`;
+
+            if (type === 'pass') testResults.passed++;
+            if (type === 'fail') testResults.failed++;
+            if (type === 'warning') testResults.warnings++;
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summary');
+            summary.innerHTML = `
+                <div class="pass">✓ Passed: ${testResults.passed}</div>
+                <div class="fail">✗ Failed: ${testResults.failed}</div>
+                <div class="warning">⚠ Warnings: ${testResults.warnings}</div>
+                <div class="info">Total Tests Run: ${testResults.passed + testResults.failed}</div>
+            `;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testResults = { passed: 0, failed: 0, warnings: 0 };
+            updateSummary();
+        }
+
+        function openInNewTab() {
+            window.open('index.html', '_blank');
+        }
+
+        async function runAllTests() {
+            clearResults();
+            log('=== Starting Automated Test Suite ===', 'info');
+            log('Date: ' + new Date().toLocaleString(), 'info');
+            log('', 'info');
+
+            // Test 1: File exists
+            log('Test 1: Checking if index.html is accessible...', 'info');
+            try {
+                const response = await fetch('index.html');
+                if (response.ok) {
+                    log('index.html is accessible', 'pass');
+                } else {
+                    log('index.html returned error: ' + response.status, 'fail');
+                }
+            } catch (e) {
+                log('Cannot access index.html: ' + e.message, 'fail');
+            }
+
+            // Test 2: Check iframe loaded
+            log('', 'info');
+            log('Test 2: Checking if app loads in iframe...', 'info');
+            const iframe = document.getElementById('app-frame');
+
+            setTimeout(() => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc) {
+                        log('App loaded in iframe', 'pass');
+
+                        // Test 3: Check critical elements
+                        log('', 'info');
+                        log('Test 3: Checking critical DOM elements...', 'info');
+
+                        const elements = [
+                            'image-file',
+                            'palette-select',
+                            'dithering-select',
+                            'enable-outline',
+                            'show-grid',
+                            'export-section',
+                            'variations-panel'
+                        ];
+
+                        elements.forEach(id => {
+                            const el = iframeDoc.getElementById(id);
+                            if (el) {
+                                log(`Element found: #${id}`, 'pass');
+                            } else {
+                                log(`Element missing: #${id}`, 'fail');
+                            }
+                        });
+
+                        // Test 4: Check JavaScript loaded
+                        log('', 'info');
+                        log('Test 4: Checking JavaScript globals...', 'info');
+
+                        const win = iframe.contentWindow;
+                        if (win.PALETTES) {
+                            log('PALETTES object loaded', 'pass');
+
+                            const paletteCount = Object.keys(win.PALETTES).length;
+                            if (paletteCount >= 5) {
+                                log(`Found ${paletteCount} palettes`, 'pass');
+                            } else {
+                                log(`Only ${paletteCount} palettes found (expected 5+)`, 'warning');
+                            }
+                        } else {
+                            log('PALETTES object not found', 'fail');
+                        }
+
+                        // Test 5: Check functions exist
+                        log('', 'info');
+                        log('Test 5: Checking critical functions...', 'info');
+
+                        const functions = [
+                            'updateImages',
+                            'downloadCanvasAsPNG',
+                            'generateVariations',
+                            'applyDithering',
+                            'applyOutline',
+                            'exportToCssShadowPixelImage'
+                        ];
+
+                        functions.forEach(funcName => {
+                            if (typeof win[funcName] === 'function') {
+                                log(`Function exists: ${funcName}()`, 'pass');
+                            } else {
+                                log(`Function missing: ${funcName}()`, 'fail');
+                            }
+                        });
+
+                        // Test 6: Check CSS loaded
+                        log('', 'info');
+                        log('Test 6: Checking styles...', 'info');
+
+                        const styles = iframeDoc.styleSheets;
+                        if (styles.length > 0) {
+                            log(`Found ${styles.length} stylesheet(s)`, 'pass');
+                        } else {
+                            log('No stylesheets found', 'warning');
+                        }
+
+                        // Test 7: Console errors check
+                        log('', 'info');
+                        log('Test 7: Checking for console errors...', 'info');
+                        log('(Check browser console manually for any errors)', 'warning');
+
+                        log('', 'info');
+                        log('=== Automated Tests Complete ===', 'info');
+                        log('', 'info');
+                        log('📋 Next Steps:', 'info');
+                        log('1. Upload a test image manually', 'info');
+                        log('2. Try different palettes (NES, Game Boy, PICO-8)', 'info');
+                        log('3. Test dithering (Floyd-Steinberg, Atkinson, Bayer)', 'info');
+                        log('4. Enable outline and adjust thickness', 'info');
+                        log('5. Generate variations and test apply/download', 'info');
+                        log('6. Download PNG at different sizes', 'info');
+                        log('7. Export as CSS box-shadow', 'info');
+                        log('', 'info');
+                        log('See TESTING_GUIDE.md for comprehensive manual tests', 'info');
+
+                    } else {
+                        log('Cannot access iframe document', 'fail');
+                    }
+                } catch (e) {
+                    log('Error accessing iframe: ' + e.message, 'fail');
+                    log('This may be a CORS issue - try opening in a local server', 'warning');
+                }
+            }, 1000); // Wait for iframe to load
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>

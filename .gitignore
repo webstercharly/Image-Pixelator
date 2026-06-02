@@ -1,0 +1,11 @@
+node_modules/
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+.npm/
+test-demo.js
+package-lock.json
+package.json

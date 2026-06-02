@@ -18,58 +18,200 @@
         max-height: 400px;
         object-fit: contain;
       }
+
+      .checkerboard {
+        background-image:
+          linear-gradient(45deg, #ccc 25%, transparent 25%),
+          linear-gradient(-45deg, #ccc 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #ccc 75%),
+          linear-gradient(-45deg, transparent 75%, #ccc 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      }
+
+      .variation-item {
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.2s;
+      }
+
+      .variation-item:hover {
+        border-color: #3b82f6;
+      }
+
+      .variation-item img {
+        image-rendering: pixelated;
+        max-height: 150px;
+      }
     </style>
   </head>
-  <body lass="bg-gray-100">
-    <div class="container mx-auto">
-      <h1 class="text-4xl font-bold mb-8">Image Pixelator</h1>
-      <div>
-        <label for="image-file" class="block text-lg font-semibold mb-2"
-          >Select Image:</label
-        >
-        <input
-          type="file"
-          id="image-file"
-          accept="image/*"
-          class="bg-white mb-6"
-        />
-      </div>
-      <div>
-        <button onclick="exportToCssShadowPixelImage()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Export to CSS Shadow Pixel Image</button>
+  <body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-6">
+      <h1 class="text-4xl font-bold mb-2">🎮 Image Pixelator</h1>
+      <p class="text-gray-600 mb-8">Gaming Asset Creator</p>
+
+      <div class="mb-6">
+        <label for="image-file" class="block text-lg font-semibold mb-2">Select Image:</label>
+        <input type="file" id="image-file" accept="image/*" class="bg-white mb-4 border rounded px-3 py-2" />
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label for="scale-slider" class="font-semibold">Scale:</label>
-          <input class="w-full" type="range" id="scale-slider" name="scale-slider" min="1" max="50" step="1" value="8" oninput="processFiles()" />
-          <label for="bit-depth-slider" class="font-semibold">Bit Depth:</label>
-          <input class="w-full" type="range" id="bit-depth-slider" name="bit-depth-slider" min="1" max="8" step="1" value="5" oninput="processFiles()" />
-          <label for="brightness-slider" class="font-semibold">Brightness:</label>
-          <input class="w-full" type="range" id="brightness-slider" name="brightness-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
-          <label for="contrast-slider" class="font-semibold">Contrast:</label>
-          <input class="w-full" type="range" id="contrast-slider" name="contrast-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
-        </div>
-        <div>
-          <label for="hue-slider" class="font-semibold">Hue:</label>
-          <input class="w-full" type="range" id="hue-slider" name="hue-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
-          <label for="saturation-slider" class="font-semibold">Saturation:</label>
-          <input class="w-full" type="range" id="saturation-slider" name="saturation-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
-          <label for="lightness-slider" class="font-semibold">Lightness:</label>
-          <input class="w-full" type="range" id="lightness-slider" name="lightness-slider" min="-1" max="1" step="0.01" value="0" oninput="processFiles()" />
+      <div class="bg-white p-4 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">⚙️ Settings</h2>
+
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-semibold text-lg mb-2">Pixelation</h3>
+            <label for="scale-slider" class="text-sm">Scale: <span id="scale-value">8</span></label>
+            <input class="w-full mb-3" type="range" id="scale-slider" name="scale-slider" min="1" max="50" step="1" value="8" />
+
+            <label for="palette-select" class="text-sm font-semibold">Color Palette:</label>
+            <select id="palette-select" class="w-full mb-3 border rounded px-2 py-1">
+              <option value="none">Free (Bit Depth)</option>
+              <option value="nes">NES (56 colors)</option>
+              <option value="gameboy">Game Boy (4 colors)</option>
+              <option value="gameboycolor">Game Boy Color (32 colors)</option>
+              <option value="pico8">PICO-8 (16 colors)</option>
+              <option value="commodore64">Commodore 64 (16 colors)</option>
+            </select>
+
+            <div id="bitdepth-container">
+              <label for="bit-depth-slider" class="text-sm">Bit Depth: <span id="bitdepth-value">5</span></label>
+              <input class="w-full mb-3" type="range" id="bit-depth-slider" name="bit-depth-slider" min="1" max="8" step="1" value="5" />
+            </div>
+
+            <label for="dithering-select" class="text-sm font-semibold">Dithering:</label>
+            <select id="dithering-select" class="w-full mb-3 border rounded px-2 py-1">
+              <option value="none">None</option>
+              <option value="floyd-steinberg">Floyd-Steinberg</option>
+              <option value="atkinson">Atkinson</option>
+              <option value="bayer">Bayer (Ordered)</option>
+            </select>
+
+            <h3 class="font-semibold text-lg mb-2 mt-4">Transparency</h3>
+            <label for="alpha-threshold-slider" class="text-sm">Alpha Threshold: <span id="alpha-value">5</span></label>
+            <input class="w-full mb-3" type="range" id="alpha-threshold-slider" name="alpha-threshold-slider" min="0" max="255" step="1" value="5" />
+
+            <h3 class="font-semibold text-lg mb-2 mt-4">Effects</h3>
+            <label class="text-sm">
+              <input type="checkbox" id="enable-outline" /> Add Outline
+            </label>
+            <div id="outline-controls" style="display: none;" class="ml-4 mt-2">
+              <label for="outline-thickness" class="text-sm">Thickness: <span id="outline-thickness-value">2</span>px</label>
+              <input class="w-full mb-2" type="range" id="outline-thickness" min="1" max="4" step="1" value="2" />
+              <label for="outline-color" class="text-sm">Color:</label>
+              <input type="color" id="outline-color" value="#000000" class="w-full mb-2" />
+            </div>
+
+            <h3 class="font-semibold text-lg mb-2 mt-4">Display</h3>
+            <label class="text-sm">
+              <input type="checkbox" id="show-grid" /> Show Grid
+            </label>
+            <select id="grid-size" class="ml-2 border rounded px-2 py-1 text-sm" disabled>
+              <option value="8">8×8</option>
+              <option value="16" selected>16×16</option>
+              <option value="32">32×32</option>
+              <option value="64">64×64</option>
+            </select>
+
+            <div class="mt-3">
+              <label for="bg-preview" class="text-sm">Preview Background:</label>
+              <select id="bg-preview" class="w-full border rounded px-2 py-1 text-sm">
+                <option value="checkerboard">Checkerboard</option>
+                <option value="white">White</option>
+                <option value="black">Black</option>
+                <option value="dark-gray">Dark Gray</option>
+                <option value="custom">Custom Color</option>
+              </select>
+              <input type="color" id="bg-custom-color" value="#333333" class="w-full mt-2" style="display: none;" />
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-semibold text-lg mb-2">Color Adjustments</h3>
+            <label for="brightness-slider" class="text-sm">Brightness: <span id="brightness-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="brightness-slider" name="brightness-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <label for="contrast-slider" class="text-sm">Contrast: <span id="contrast-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="contrast-slider" name="contrast-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <label for="hue-slider" class="text-sm">Hue: <span id="hue-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="hue-slider" name="hue-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <label for="saturation-slider" class="text-sm">Saturation: <span id="saturation-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="saturation-slider" name="saturation-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <label for="lightness-slider" class="text-sm">Lightness: <span id="lightness-value">0</span></label>
+            <input class="w-full mb-3" type="range" id="lightness-slider" name="lightness-slider" min="-1" max="1" step="0.01" value="0" />
+
+            <h3 class="font-semibold text-lg mb-2 mt-4">Quick Actions</h3>
+            <button id="generate-variations" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded w-full mb-2">
+              Generate Variations
+            </button>
+            <button id="reset-all" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full">
+              Reset All Settings
+            </button>
+
+            <div id="color-info" class="mt-4 p-2 bg-gray-100 rounded text-sm">
+              <strong>Color Info:</strong>
+              <div id="color-count">Unique colors: -</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div id="image-container" class="grid grid-cols-2 gap-4">
+      <div id="image-container" class="grid grid-cols-2 gap-4 mb-6">
         <div id="original-image-container" class="bg-white p-4 rounded shadow">
           <h2 class="text-xl font-semibold mb-4">Original Image</h2>
         </div>
         <div id="pixelated-image-container" class="bg-white p-4 rounded shadow">
           <h2 class="text-xl font-semibold mb-4">Pixelated Image</h2>
+          <div id="dimensions-info" class="text-sm text-gray-600 mt-2"></div>
         </div>
       </div>
-      
+
+      <div id="variations-panel" class="bg-white p-4 rounded shadow mb-6" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4">🎨 Quick Variations</h2>
+        <div id="variations-grid" class="grid grid-cols-4 gap-4 mb-4">
+          <!-- Variations will be inserted here -->
+        </div>
+        <p class="text-sm text-gray-600 mb-2">Click any variation to apply it, or download individually</p>
+      </div>
+
+      <div id="export-section" class="bg-white p-4 rounded shadow mb-6" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4">📤 Export</h2>
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 mb-2">PNG Export - Select sizes:</p>
+          <label class="inline-block mr-4"><input type="checkbox" id="export-1x" checked> 1x</label>
+          <label class="inline-block mr-4"><input type="checkbox" id="export-2x" checked> 2x</label>
+          <label class="inline-block mr-4"><input type="checkbox" id="export-4x"> 4x</label>
+          <label class="inline-block mr-4"><input type="checkbox" id="export-8x"> 8x</label>
+        </div>
+        <div class="flex gap-2 flex-wrap mb-4">
+          <button id="download-1x" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Download 1x PNG</button>
+          <button id="download-2x" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Download 2x PNG</button>
+          <button id="download-4x" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Download 4x PNG</button>
+          <button id="download-8x" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Download 8x PNG</button>
+          <button id="download-all" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Download All Selected</button>
+        </div>
+        <hr class="my-4">
+        <div>
+          <p class="text-sm text-gray-600 mb-2">Special Exports:</p>
+          <button id="export-css" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">Export as CSS Box-Shadow</button>
+          <p class="text-xs text-gray-500 mt-1">Creates pixel art using CSS box-shadow (opens in new window)</p>
+        </div>
+      </div>
+
     </div>
     <script>
+      // Gaming Color Palettes
+      const PALETTES = {
+        nes: [[124,124,124],[0,0,252],[0,0,188],[68,40,188],[148,0,132],[168,0,32],[168,16,0],[136,20,0],[80,48,0],[0,120,0],[0,104,0],[0,88,0],[0,64,88],[0,0,0],[0,0,0],[0,0,0],[188,188,188],[0,120,248],[0,88,248],[104,68,252],[216,0,204],[228,0,88],[248,56,0],[228,92,16],[172,124,0],[0,184,0],[0,168,0],[0,168,68],[0,136,136],[0,0,0],[0,0,0],[0,0,0],[248,248,248],[60,188,252],[92,148,252],[204,136,252],[244,120,252],[248,116,176],[248,164,192],[240,208,176],[248,216,120],[184,248,24],[88,216,84],[88,248,152],[0,232,216],[120,120,120],[0,0,0],[0,0,0],[252,252,252],[164,228,252],[184,184,248],[216,184,248],[248,184,248],[248,164,192],[240,208,176],[252,224,168],[248,216,120],[216,248,120],[184,248,184],[184,248,216],[0,252,252],[248,216,248],[0,0,0],[0,0,0]],
+        gameboy: [[15,56,15],[48,98,48],[139,172,15],[155,188,15]],
+        gameboycolor: [[0,0,0],[52,104,86],[136,192,112],[224,248,208],[139,172,15],[155,188,15],[48,98,48],[15,56,15],[52,40,40],[92,80,80],[156,144,144],[220,216,216],[255,0,0],[255,127,0],[255,255,0],[0,255,0],[0,255,255],[0,0,255],[255,0,255],[255,184,248],[248,120,88],[152,120,248],[120,184,248],[184,248,248],[184,248,120],[248,216,120],[248,120,120],[184,0,0],[0,184,0],[0,0,184]],
+        pico8: [[0,0,0],[29,43,83],[126,37,83],[0,135,81],[171,82,54],[95,87,79],[194,195,199],[255,241,232],[255,0,77],[255,163,0],[255,236,39],[0,228,54],[41,173,255],[131,118,156],[255,119,168],[255,204,170]],
+        commodore64: [[0,0,0],[255,255,255],[136,0,0],[170,255,238],[204,68,204],[0,204,85],[0,0,170],[238,238,119],[221,136,85],[102,68,0],[255,119,119],[51,51,51],[119,119,119],[170,255,102],[0,136,255],[187,187,187]]
+      };
+
       const fileInput = document.getElementById('image-file');
       const scaleSlider = document.getElementById('scale-slider');
       const bitDepthSlider = document.getElementById('bit-depth-slider');
@@ -78,14 +220,26 @@
       const hueSlider = document.getElementById('hue-slider');
       const saturationSlider = document.getElementById('saturation-slider');
       const lightnessSlider = document.getElementById('lightness-slider');
-      const originalImageContainer = document.getElementById(
-        'original-image-container',
-      );
-      const pixelatedImageContainer = document.getElementById(
-        'pixelated-image-container',
-      );
+      const alphaThresholdSlider = document.getElementById('alpha-threshold-slider');
+      const paletteSelect = document.getElementById('palette-select');
+      const ditheringSelect = document.getElementById('dithering-select');
+      const showGridCheckbox = document.getElementById('show-grid');
+      const gridSizeSelect = document.getElementById('grid-size');
+      const enableOutlineCheckbox = document.getElementById('enable-outline');
+      const outlineThicknessSlider = document.getElementById('outline-thickness');
+      const outlineColorInput = document.getElementById('outline-color');
+      const bgPreviewSelect = document.getElementById('bg-preview');
+      const bgCustomColorInput = document.getElementById('bg-custom-color');
+      const originalImageContainer = document.getElementById('original-image-container');
+      const pixelatedImageContainer = document.getElementById('pixelated-image-container');
+      const exportSection = document.getElementById('export-section');
+      const variationsPanel = document.getElementById('variations-panel');
 
       let sourceImageUrl;
+      let processedCanvas = null;
+      let currentSettings = null;
+      let processingRequestId = 0; // Track latest processing request
+      let isGeneratingVariations = false; // Prevent concurrent variation generation
 
       fileInput.addEventListener('change', (e) => {
         processFiles(e.target.files);
@@ -133,15 +287,137 @@
         }
       });
 
+      alphaThresholdSlider.addEventListener('input', () => {
+        document.getElementById('alpha-value').textContent = alphaThresholdSlider.value;
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      paletteSelect.addEventListener('change', () => {
+        const bitdepthContainer = document.getElementById('bitdepth-container');
+        if (paletteSelect.value === 'none') {
+          bitdepthContainer.style.display = 'block';
+        } else {
+          bitdepthContainer.style.display = 'none';
+        }
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      showGridCheckbox.addEventListener('change', () => {
+        gridSizeSelect.disabled = !showGridCheckbox.checked;
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      gridSizeSelect.addEventListener('change', () => {
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      // Update slider value displays
+      scaleSlider.addEventListener('input', () => {
+        document.getElementById('scale-value').textContent = scaleSlider.value;
+      });
+      bitDepthSlider.addEventListener('input', () => {
+        document.getElementById('bitdepth-value').textContent = bitDepthSlider.value;
+      });
+      brightnessSlider.addEventListener('input', () => {
+        document.getElementById('brightness-value').textContent = parseFloat(brightnessSlider.value).toFixed(2);
+      });
+      contrastSlider.addEventListener('input', () => {
+        document.getElementById('contrast-value').textContent = parseFloat(contrastSlider.value).toFixed(2);
+      });
+      hueSlider.addEventListener('input', () => {
+        document.getElementById('hue-value').textContent = parseFloat(hueSlider.value).toFixed(2);
+      });
+      saturationSlider.addEventListener('input', () => {
+        document.getElementById('saturation-value').textContent = parseFloat(saturationSlider.value).toFixed(2);
+      });
+      lightnessSlider.addEventListener('input', () => {
+        document.getElementById('lightness-value').textContent = parseFloat(lightnessSlider.value).toFixed(2);
+      });
+
+      // New Phase 2 controls
+      ditheringSelect.addEventListener('change', () => {
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      enableOutlineCheckbox.addEventListener('change', () => {
+        document.getElementById('outline-controls').style.display = enableOutlineCheckbox.checked ? 'block' : 'none';
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      outlineThicknessSlider.addEventListener('input', () => {
+        document.getElementById('outline-thickness-value').textContent = outlineThicknessSlider.value;
+        if (sourceImageUrl && enableOutlineCheckbox.checked) {
+          updateImages();
+        }
+      });
+
+      outlineColorInput.addEventListener('change', () => {
+        if (sourceImageUrl && enableOutlineCheckbox.checked) {
+          updateImages();
+        }
+      });
+
+      bgPreviewSelect.addEventListener('change', () => {
+        bgCustomColorInput.style.display = bgPreviewSelect.value === 'custom' ? 'block' : 'none';
+        if (sourceImageUrl) {
+          updateBackgroundPreview();
+        }
+      });
+
+      bgCustomColorInput.addEventListener('change', () => {
+        if (sourceImageUrl && bgPreviewSelect.value === 'custom') {
+          updateBackgroundPreview();
+        }
+      });
+
+      document.getElementById('reset-all').addEventListener('click', () => {
+        scaleSlider.value = 8;
+        bitDepthSlider.value = 5;
+        brightnessSlider.value = 0;
+        contrastSlider.value = 0;
+        hueSlider.value = 0;
+        saturationSlider.value = 0;
+        lightnessSlider.value = 0;
+        alphaThresholdSlider.value = 5;
+        paletteSelect.value = 'none';
+        ditheringSelect.value = 'none';
+        enableOutlineCheckbox.checked = false;
+        showGridCheckbox.checked = false;
+        bgPreviewSelect.value = 'checkerboard';
+        document.getElementById('outline-controls').style.display = 'none';
+        if (sourceImageUrl) {
+          updateImages();
+        }
+      });
+
+      document.getElementById('generate-variations').addEventListener('click', () => {
+        if (sourceImageUrl) {
+          generateVariations();
+        }
+      });
+
       function processFiles(files) {
-        originalImageContainer.innerHTML = '';
-        pixelatedImageContainer.innerHTML = '';
+        originalImageContainer.innerHTML = '<h2 class="text-xl font-semibold mb-4">Original Image</h2>';
+        pixelatedImageContainer.innerHTML = '<h2 class="text-xl font-semibold mb-4">Pixelated Image</h2>';
 
         for (const file of files) {
           if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
               sourceImageUrl = e.target.result;
+              exportSection.style.display = 'block';
               updateImages();
             };
             reader.readAsDataURL(file);
@@ -149,53 +425,30 @@
         }
       }
 
-    function exportToCssShadowPixelImage() {
-      const img = document.querySelector('img[alt="Pixel Art Image"]');
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
-      const data = imageData.data;
-      const width = img.width;
-      const height = img.height;
-      const shadowPixelSize = 5;
-      let cssShadowPixelImage = '';
-    
-      for (let y = 0; y < height; y += shadowPixelSize) {
-        for (let x = 0; x < width; x += shadowPixelSize) {
-          let r = 0;
-          let g = 0;
-          let b = 0;
-          let count = 0;
-    
-          for (let sy = 0; sy < shadowPixelSize; sy++) {
-            for (let sx = 0; sx < shadowPixelSize; sx++) {
-              const index = ((y + sy) * width + (x + sx)) * 4;
-              r += data[index];
-              g += data[index + 1];
-              b += data[index + 2];
-              count++;
-            }
-          }
-    
-          r = Math.round(r / count);
-          g = Math.round(g / count);
-          b = Math.round(b / count);
-    
-          const shadowPixel = `${x}px ${y}px rgba(${r}, ${g}, ${b}, 1), `;
-          cssShadowPixelImage += shadowPixel;
+      function findNearestPaletteColor(r, g, b, palette) {
+        // Validate palette is non-empty array
+        if (!palette || !Array.isArray(palette) || palette.length === 0) {
+          console.warn('Invalid or empty palette, returning original color');
+          return [r, g, b];
         }
+
+        let minDist = Infinity;
+        let nearest = palette[0];
+
+        for (const color of palette) {
+          const dist = Math.sqrt(
+            Math.pow(r - color[0], 2) +
+            Math.pow(g - color[1], 2) +
+            Math.pow(b - color[2], 2)
+          );
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = color;
+          }
+        }
+
+        return nearest;
       }
-    
-      cssShadowPixelImage = cssShadowPixelImage.slice(0, -2); // remove last comma and space
-      const cssImage = document.createElement('div');
-      cssImage.style.boxShadow = cssShadowPixelImage;
-      cssImage.style.width = `${width}px`;
-      cssImage.style.height = `${height}px`;
-      document.body.appendChild(cssImage);
-    }
 
       function updateImages() {
         const hue = parseFloat(hueSlider.value);
@@ -203,8 +456,20 @@
         const lightness = parseFloat(lightnessSlider.value);
         const scale = parseInt(scaleSlider.value);
         const bitDepth = parseInt(bitDepthSlider.value);
-        const brightness = parseInt(brightnessSlider.value);
-        const contrast = parseInt(contrastSlider.value);
+        const brightness = parseFloat(brightnessSlider.value);
+        const contrast = parseFloat(contrastSlider.value);
+        const alphaThreshold = parseInt(alphaThresholdSlider.value);
+        const selectedPalette = paletteSelect.value;
+        const ditheringMethod = ditheringSelect.value;
+
+        // Increment request ID to track latest request
+        const requestId = ++processingRequestId;
+
+        // Store current settings for variations
+        currentSettings = {
+          hue, saturation, lightness, scale, bitDepth, brightness, contrast,
+          alphaThreshold, selectedPalette, ditheringMethod
+        };
 
         const sourceImage = new Image();
         sourceImage.crossOrigin = 'Anonymous';
@@ -226,6 +491,7 @@
           adjustedImageData.data.set(originalImageData.data);
           applyBrightnessContrast(adjustedImageData, brightness, contrast);
           applyHSLAdjustments(adjustedImageData, hue, saturation, lightness);
+          applyAlphaThreshold(adjustedImageData, alphaThreshold);
           ctx.putImageData(adjustedImageData, 0, 0);
 
           const adjustedImageUrl = canvas.toDataURL();
@@ -233,27 +499,147 @@
             adjustedImageUrl,
             scale,
             bitDepth,
-            (pixelArtUrl) => {
-              displayImages(sourceImageUrl, pixelArtUrl);
+            selectedPalette,
+            alphaThreshold,
+            ditheringMethod,
+            (pixelArtCanvas) => {
+              // Only update if this is still the latest request (prevent stale overwrites)
+              if (requestId !== processingRequestId) {
+                return; // Discard stale result
+              }
+
+              // Apply outline if enabled
+              if (enableOutlineCheckbox.checked) {
+                pixelArtCanvas = applyOutline(pixelArtCanvas, parseInt(outlineThicknessSlider.value), outlineColorInput.value);
+              }
+
+              processedCanvas = pixelArtCanvas;
+              updateColorCount(pixelArtCanvas);
+              const pixelArtUrl = pixelArtCanvas.toDataURL();
+              displayImages(sourceImageUrl, pixelArtUrl, pixelArtCanvas.width, pixelArtCanvas.height);
             },
           );
         };
       }
 
-      function displayImages(originalUrl, pixelatedUrl) {
+      function updateBackgroundPreview() {
+        const pixelContainer = pixelatedImageContainer.querySelector('.pixel-container');
+        if (!pixelContainer) return;
+
+        const bgValue = bgPreviewSelect.value;
+        pixelContainer.classList.remove('checkerboard');
+        pixelContainer.style.backgroundColor = '';
+
+        switch(bgValue) {
+          case 'checkerboard':
+            pixelContainer.classList.add('checkerboard');
+            break;
+          case 'white':
+            pixelContainer.style.backgroundColor = '#ffffff';
+            break;
+          case 'black':
+            pixelContainer.style.backgroundColor = '#000000';
+            break;
+          case 'dark-gray':
+            pixelContainer.style.backgroundColor = '#333333';
+            break;
+          case 'custom':
+            pixelContainer.style.backgroundColor = bgCustomColorInput.value;
+            break;
+        }
+      }
+
+      function displayImages(originalUrl, pixelatedUrl, width, height) {
         const originalImg = document.createElement('img');
         originalImg.alt = 'Original Image';
         originalImg.src = originalUrl;
         originalImg.className = 'w-full h-auto';
-        originalImageContainer.innerHTML = '';
+        originalImageContainer.innerHTML = '<h2 class="text-xl font-semibold mb-4">Original Image</h2>';
         originalImageContainer.appendChild(originalImg);
+
+        pixelatedImageContainer.innerHTML = '<h2 class="text-xl font-semibold mb-4">Pixelated Image</h2>';
+
+        // Create container for pixelated image with grid overlay
+        const pixelContainer = document.createElement('div');
+        pixelContainer.className = 'pixel-container';
+        pixelContainer.style.position = 'relative';
+        pixelContainer.style.display = 'inline-block';
+        pixelContainer.style.padding = '10px';
+
+        // Apply background
+        const bgValue = bgPreviewSelect.value;
+        if (bgValue === 'checkerboard') {
+          pixelContainer.classList.add('checkerboard');
+        } else if (bgValue === 'white') {
+          pixelContainer.style.backgroundColor = '#ffffff';
+        } else if (bgValue === 'black') {
+          pixelContainer.style.backgroundColor = '#000000';
+        } else if (bgValue === 'dark-gray') {
+          pixelContainer.style.backgroundColor = '#333333';
+        } else if (bgValue === 'custom') {
+          pixelContainer.style.backgroundColor = bgCustomColorInput.value;
+        }
 
         const pixelArtImg = document.createElement('img');
         pixelArtImg.alt = 'Pixel Art Image';
         pixelArtImg.src = pixelatedUrl;
         pixelArtImg.className = 'w-full h-auto';
-        pixelatedImageContainer.innerHTML = '';
-        pixelatedImageContainer.appendChild(pixelArtImg);
+        pixelArtImg.style.imageRendering = 'pixelated';
+        pixelContainer.appendChild(pixelArtImg);
+
+        // Add grid overlay if enabled
+        if (showGridCheckbox.checked) {
+          const gridSize = parseInt(gridSizeSelect.value);
+          const gridCanvas = document.createElement('canvas');
+          gridCanvas.width = width;
+          gridCanvas.height = height;
+          gridCanvas.style.position = 'absolute';
+          gridCanvas.style.top = '10px';
+          gridCanvas.style.left = '10px';
+          gridCanvas.style.width = 'calc(100% - 20px)';
+          gridCanvas.style.height = 'calc(100% - 20px)';
+          gridCanvas.style.pointerEvents = 'none';
+
+          const gridCtx = gridCanvas.getContext('2d');
+          gridCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+          gridCtx.lineWidth = 1;
+
+          for (let x = 0; x <= width; x += gridSize) {
+            gridCtx.beginPath();
+            gridCtx.moveTo(x, 0);
+            gridCtx.lineTo(x, height);
+            gridCtx.stroke();
+          }
+
+          for (let y = 0; y <= height; y += gridSize) {
+            gridCtx.beginPath();
+            gridCtx.moveTo(0, y);
+            gridCtx.lineTo(width, y);
+            gridCtx.stroke();
+          }
+
+          pixelContainer.appendChild(gridCanvas);
+        }
+
+        pixelatedImageContainer.appendChild(pixelContainer);
+
+        // Update dimensions info
+        const dimensionsInfo = document.createElement('div');
+        dimensionsInfo.className = 'text-sm text-gray-600 mt-2';
+        const gridSize = parseInt(gridSizeSelect.value);
+        const tilesX = Math.floor(width / gridSize);
+        const tilesY = Math.floor(height / gridSize);
+        dimensionsInfo.textContent = `${width}×${height} pixels (${tilesX}×${tilesY} tiles at ${gridSize}×${gridSize})`;
+        pixelatedImageContainer.appendChild(dimensionsInfo);
+      }
+
+      function applyAlphaThreshold(imageData, threshold) {
+        const data = imageData.data;
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < threshold) {
+            data[i] = 0;
+          }
+        }
       }
 
       function applyBrightnessContrast(imageData, brightness, contrast) {
@@ -269,7 +655,7 @@
         }
       }
 
-      function convertToPixelArt(imageUrl, scale, bitDepth, callback) {
+      function convertToPixelArt(imageUrl, scale, bitDepth, paletteName, alphaThreshold, ditheringMethod, callback) {
         const sourceImage = new Image();
         sourceImage.crossOrigin = 'Anonymous';
         sourceImage.src = imageUrl;
@@ -283,23 +669,40 @@
 
           ctx.drawImage(sourceImage, 0, 0, width, height);
 
+          // Get image data for dithering
+          let imageData = ctx.getImageData(0, 0, width, height);
+
+          const usePalette = paletteName !== 'none' && PALETTES[paletteName];
+
+          // Apply dithering if selected
+          if (ditheringMethod !== 'none') {
+            imageData = applyDithering(imageData, ditheringMethod, usePalette ? PALETTES[paletteName] : null, bitDepth);
+            ctx.putImageData(imageData, 0, 0);
+          }
+
+          // Pixelate
           for (let y = 0; y < height; y += scale) {
             for (let x = 0; x < width; x += scale) {
               const pixelData = ctx.getImageData(x, y, scale, scale);
-              const pixelColor = getAverageColor(pixelData);
-              const quantizedColor = quantizeColor(
-                pixelColor[0],
-                pixelColor[1],
-                pixelColor[2],
-                bitDepth,
-              );
-              ctx.fillStyle = `rgb(${quantizedColor[0]}, ${quantizedColor[1]}, ${quantizedColor[2]})`;
+              const avgColor = getAverageColor(pixelData);
+              const avgAlpha = getAverageAlpha(pixelData);
+
+              let finalColor;
+              if (usePalette) {
+                finalColor = findNearestPaletteColor(avgColor[0], avgColor[1], avgColor[2], PALETTES[paletteName]);
+              } else {
+                finalColor = quantizeColor(avgColor[0], avgColor[1], avgColor[2], bitDepth);
+              }
+
+              // Apply alpha threshold
+              const alpha = avgAlpha < alphaThreshold ? 0 : avgAlpha;
+
+              ctx.fillStyle = `rgba(${finalColor[0]}, ${finalColor[1]}, ${finalColor[2]}, ${alpha / 255})`;
               ctx.fillRect(x, y, scale, scale);
             }
           }
 
-          const pixelArtUrl = canvas.toDataURL();
-          callback(pixelArtUrl);
+          callback(canvas);
         };
       }
 
@@ -396,15 +799,526 @@
         return [r / count, g / count, b / count];
       }
 
+      function getAverageAlpha(imageData) {
+        let a = 0,
+          count = 0;
+        for (let i = 3; i < imageData.data.length; i += 4) {
+          a += imageData.data[i];
+          count++;
+        }
+        return a / count;
+      }
+
       function quantizeColor(r, g, b, bitDepth) {
-        const levels = Math.pow(2, bitDepth) - 1;
-        const step = 256 / levels;
-        const qr = Math.round(r / step) * step;
-        const qg = Math.round(g / step) * step;
-        const qb = Math.round(b / step) * step;
+        const levels = Math.pow(2, bitDepth);
+        const maxLevel = levels - 1;
+        // Map 0-255 to 0-(levels-1) then back to 0-255, preserving endpoints
+        const qr = Math.round(r / 255 * maxLevel) * (255 / maxLevel);
+        const qg = Math.round(g / 255 * maxLevel) * (255 / maxLevel);
+        const qb = Math.round(b / 255 * maxLevel) * (255 / maxLevel);
         return [qr, qg, qb];
       }
 
+      // Dithering functions
+      function applyDithering(imageData, method, palette, bitDepth) {
+        const width = imageData.width;
+        const height = imageData.height;
+        const data = new Uint8ClampedArray(imageData.data);
+
+        if (method === 'floyd-steinberg') {
+          for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+              const idx = (y * width + x) * 4;
+              const oldR = data[idx];
+              const oldG = data[idx + 1];
+              const oldB = data[idx + 2];
+
+              let newColor;
+              if (palette) {
+                newColor = findNearestPaletteColor(oldR, oldG, oldB, palette);
+              } else {
+                newColor = quantizeColor(oldR, oldG, oldB, bitDepth);
+              }
+
+              data[idx] = newColor[0];
+              data[idx + 1] = newColor[1];
+              data[idx + 2] = newColor[2];
+
+              const errR = oldR - newColor[0];
+              const errG = oldG - newColor[1];
+              const errB = oldB - newColor[2];
+
+              // Distribute error to neighboring pixels
+              if (x + 1 < width) {
+                const i = idx + 4;
+                data[i] += errR * 7/16;
+                data[i + 1] += errG * 7/16;
+                data[i + 2] += errB * 7/16;
+              }
+              if (y + 1 < height) {
+                if (x > 0) {
+                  const i = ((y + 1) * width + (x - 1)) * 4;
+                  data[i] += errR * 3/16;
+                  data[i + 1] += errG * 3/16;
+                  data[i + 2] += errB * 3/16;
+                }
+                const i = ((y + 1) * width + x) * 4;
+                data[i] += errR * 5/16;
+                data[i + 1] += errG * 5/16;
+                data[i + 2] += errB * 5/16;
+                if (x + 1 < width) {
+                  const i = ((y + 1) * width + (x + 1)) * 4;
+                  data[i] += errR * 1/16;
+                  data[i + 1] += errG * 1/16;
+                  data[i + 2] += errB * 1/16;
+                }
+              }
+            }
+          }
+        } else if (method === 'atkinson') {
+          for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+              const idx = (y * width + x) * 4;
+              const oldR = data[idx];
+              const oldG = data[idx + 1];
+              const oldB = data[idx + 2];
+
+              let newColor;
+              if (palette) {
+                newColor = findNearestPaletteColor(oldR, oldG, oldB, palette);
+              } else {
+                newColor = quantizeColor(oldR, oldG, oldB, bitDepth);
+              }
+
+              data[idx] = newColor[0];
+              data[idx + 1] = newColor[1];
+              data[idx + 2] = newColor[2];
+
+              const errR = (oldR - newColor[0]) / 8;
+              const errG = (oldG - newColor[1]) / 8;
+              const errB = (oldB - newColor[2]) / 8;
+
+              // Atkinson dithering pattern
+              [[1,0],[2,0],[0,1],[1,1],[0,2]].forEach(([dx, dy]) => {
+                if (x + dx < width && y + dy < height) {
+                  const i = ((y + dy) * width + (x + dx)) * 4;
+                  data[i] += errR;
+                  data[i + 1] += errG;
+                  data[i + 2] += errB;
+                }
+              });
+            }
+          }
+        } else if (method === 'bayer') {
+          const bayerMatrix = [
+            [0, 8, 2, 10],
+            [12, 4, 14, 6],
+            [3, 11, 1, 9],
+            [15, 7, 13, 5]
+          ];
+          const matrixSize = 4;
+
+          for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+              const idx = (y * width + x) * 4;
+              const threshold = (bayerMatrix[y % matrixSize][x % matrixSize] / 16 - 0.5) * 32;
+
+              const r = Math.max(0, Math.min(255, data[idx] + threshold));
+              const g = Math.max(0, Math.min(255, data[idx + 1] + threshold));
+              const b = Math.max(0, Math.min(255, data[idx + 2] + threshold));
+
+              let newColor;
+              if (palette) {
+                newColor = findNearestPaletteColor(r, g, b, palette);
+              } else {
+                newColor = quantizeColor(r, g, b, bitDepth);
+              }
+
+              data[idx] = newColor[0];
+              data[idx + 1] = newColor[1];
+              data[idx + 2] = newColor[2];
+            }
+          }
+        }
+
+        imageData.data.set(data);
+        return imageData;
+      }
+
+      // Outline function
+      function applyOutline(canvas, thickness, color) {
+        // Create a new canvas to avoid modifying the original
+        const outputCanvas = document.createElement('canvas');
+        outputCanvas.width = canvas.width;
+        outputCanvas.height = canvas.height;
+        const outputCtx = outputCanvas.getContext('2d');
+
+        // Copy original image data
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = new Uint8ClampedArray(imageData.data); // Create a copy of the data
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Create a copy to detect edges
+        const edgeMap = new Uint8Array(width * height);
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const alpha = data[idx + 3];
+
+            // Check if this is an edge pixel (has alpha but neighbor doesn't)
+            // Use threshold to catch semi-transparent boundaries
+            const alphaThreshold = 32;
+            if (alpha >= alphaThreshold) {
+              let isEdge = false;
+              for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                  const nx = x + dx;
+                  const ny = y + dy;
+                  if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const nidx = (ny * width + nx) * 4;
+                    if (data[nidx + 3] < alphaThreshold) {
+                      isEdge = true;
+                      break;
+                    }
+                  }
+                }
+                if (isEdge) break;
+              }
+              edgeMap[y * width + x] = isEdge ? 1 : 0;
+            }
+          }
+        }
+
+        // Apply outline
+        const outlineColor = hexToRgb(color);
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            if (edgeMap[y * width + x]) {
+              for (let dy = -thickness; dy <= thickness; dy++) {
+                for (let dx = -thickness; dx <= thickness; dx++) {
+                  const nx = x + dx;
+                  const ny = y + dy;
+                  if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    const nidx = (ny * width + nx) * 4;
+                    if (data[nidx + 3] === 0) {
+                      data[nidx] = outlineColor.r;
+                      data[nidx + 1] = outlineColor.g;
+                      data[nidx + 2] = outlineColor.b;
+                      data[nidx + 3] = 255;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Put modified data into output canvas
+        imageData.data.set(data);
+        outputCtx.putImageData(imageData, 0, 0);
+        return outputCanvas;
+      }
+
+      function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : {r: 0, g: 0, b: 0};
+      }
+
+      // Color count function
+      function updateColorCount(canvas) {
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const colors = new Set();
+
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] > 0) { // Only count non-transparent pixels
+            const color = `${data[i]},${data[i+1]},${data[i+2]}`;
+            colors.add(color);
+          }
+        }
+
+        document.getElementById('color-count').textContent = `Unique colors: ${colors.size}`;
+      }
+
+      // Variations generator
+      function generateVariations() {
+        if (!currentSettings) return;
+
+        // Prevent concurrent generation
+        if (isGeneratingVariations) {
+          console.log('Variation generation already in progress');
+          return;
+        }
+
+        isGeneratingVariations = true;
+        variationsPanel.style.display = 'block';
+        const grid = document.getElementById('variations-grid');
+        grid.innerHTML = '<p class="col-span-4 text-center text-gray-600">Generating variations...</p>';
+
+        const variations = [
+          { name: 'Original', settings: currentSettings },
+          { name: 'Light', settings: {...currentSettings, brightness: Math.min(1, currentSettings.brightness + 0.3)} },
+          { name: 'Dark', settings: {...currentSettings, brightness: Math.max(-1, currentSettings.brightness - 0.3)} },
+          { name: 'High Contrast', settings: {...currentSettings, contrast: 0.5} },
+          { name: 'Warm', settings: {...currentSettings, hue: 0.1} },
+          { name: 'Cool', settings: {...currentSettings, hue: -0.1} },
+          { name: 'Vibrant', settings: {...currentSettings, saturation: Math.min(1, currentSettings.saturation + 0.5)} },
+          { name: 'Desaturated', settings: {...currentSettings, saturation: Math.max(-1, currentSettings.saturation - 0.5)} },
+        ];
+
+        grid.innerHTML = '';
+        let completedCount = 0;
+        const totalVariations = variations.length;
+
+        variations.forEach((variation, index) => {
+          const variationDiv = document.createElement('div');
+          variationDiv.className = 'variation-item bg-white p-2 rounded shadow';
+
+          processVariation(variation.settings, (canvas) => {
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL();
+            img.alt = variation.name;
+            img.className = 'w-full h-auto mb-2';
+            img.style.imageRendering = 'pixelated';
+
+            const label = document.createElement('div');
+            label.className = 'text-xs text-center font-semibold mb-1';
+            label.textContent = variation.name;
+
+            const btnApply = document.createElement('button');
+            btnApply.textContent = 'Apply';
+            btnApply.className = 'bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded w-full mb-1';
+            btnApply.addEventListener('click', () => {
+              applyVariationSettings(variation.settings);
+            });
+
+            const btnDownload = document.createElement('button');
+            btnDownload.textContent = 'Download';
+            btnDownload.className = 'bg-green-500 hover:bg-green-700 text-white text-xs font-bold py-1 px-2 rounded w-full';
+            btnDownload.addEventListener('click', () => {
+              downloadCanvasAsPNG(canvas, 1, `variation_${variation.name.toLowerCase()}.png`);
+            });
+
+            variationDiv.innerHTML = '';
+            variationDiv.appendChild(label);
+            variationDiv.appendChild(img);
+            variationDiv.appendChild(btnApply);
+            variationDiv.appendChild(btnDownload);
+            grid.appendChild(variationDiv);
+
+            // Track completion and reset flag when all done
+            completedCount++;
+            if (completedCount === totalVariations) {
+              isGeneratingVariations = false;
+            }
+          });
+        });
+      }
+
+      function processVariation(settings, callback) {
+        const sourceImage = new Image();
+        sourceImage.crossOrigin = 'Anonymous';
+        sourceImage.src = sourceImageUrl;
+        sourceImage.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = sourceImage.width;
+          canvas.height = sourceImage.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(sourceImage, 0, 0);
+
+          const imageData = ctx.getImageData(0, 0, sourceImage.width, sourceImage.height);
+          const adjustedImageData = ctx.createImageData(imageData);
+          adjustedImageData.data.set(imageData.data);
+
+          applyBrightnessContrast(adjustedImageData, settings.brightness, settings.contrast);
+          applyHSLAdjustments(adjustedImageData, settings.hue, settings.saturation, settings.lightness);
+          applyAlphaThreshold(adjustedImageData, settings.alphaThreshold);
+          ctx.putImageData(adjustedImageData, 0, 0);
+
+          const adjustedImageUrl = canvas.toDataURL();
+          convertToPixelArt(
+            adjustedImageUrl,
+            settings.scale,
+            settings.bitDepth,
+            settings.selectedPalette,
+            settings.alphaThreshold,
+            settings.ditheringMethod,
+            callback
+          );
+        };
+      }
+
+      function applyVariationSettings(settings) {
+        brightnessSlider.value = settings.brightness;
+        contrastSlider.value = settings.contrast;
+        hueSlider.value = settings.hue;
+        saturationSlider.value = settings.saturation;
+        lightnessSlider.value = settings.lightness;
+
+        // Update displays
+        document.getElementById('brightness-value').textContent = parseFloat(settings.brightness).toFixed(2);
+        document.getElementById('contrast-value').textContent = parseFloat(settings.contrast).toFixed(2);
+        document.getElementById('hue-value').textContent = parseFloat(settings.hue).toFixed(2);
+        document.getElementById('saturation-value').textContent = parseFloat(settings.saturation).toFixed(2);
+        document.getElementById('lightness-value').textContent = parseFloat(settings.lightness).toFixed(2);
+
+        updateImages();
+      }
+
+      // CSS Export function (improved)
+      function exportToCssShadowPixelImage() {
+        if (!processedCanvas) {
+          alert('Please process an image first!');
+          return;
+        }
+
+        const ctx = processedCanvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, processedCanvas.width, processedCanvas.height);
+        const data = imageData.data;
+        const width = processedCanvas.width;
+        const height = processedCanvas.height;
+
+        let cssShadow = '';
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+            const a = data[idx + 3] / 255;
+
+            if (a > 0) {
+              cssShadow += `${x}px ${y}px 0 rgba(${r},${g},${b},${a}),`;
+            }
+          }
+        }
+
+        cssShadow = cssShadow.slice(0, -1); // Remove trailing comma
+
+        // Create new window with CSS pixel art
+        const win = window.open('', '_blank');
+        win.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>CSS Box-Shadow Pixel Art</title>
+            <style>
+              body { margin: 0; padding: 20px; background: #222; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+              .pixel-art { width: 1px; height: 1px; box-shadow: ${cssShadow}; }
+              .controls { position: fixed; top: 10px; right: 10px; background: white; padding: 10px; border-radius: 5px; }
+            </style>
+          </head>
+          <body>
+            <div class="controls">
+              <button onclick="navigator.clipboard.writeText(document.querySelector('.pixel-art').style.boxShadow)">Copy CSS</button>
+            </div>
+            <div class="pixel-art"></div>
+          </body>
+          </html>
+        `);
+      }
+
+      // Download functions
+      function downloadCanvasAsPNG(canvas, scale, filename) {
+        return new Promise((resolve, reject) => {
+          const exportCanvas = document.createElement('canvas');
+          exportCanvas.width = canvas.width * scale;
+          exportCanvas.height = canvas.height * scale;
+          const ctx = exportCanvas.getContext('2d');
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+
+          exportCanvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to create blob'));
+              return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            resolve();
+          }, 'image/png');
+        });
+      }
+
+      function getFilenameBase() {
+        const scale = scaleSlider.value;
+        const palette = paletteSelect.value;
+        const bitDepth = bitDepthSlider.value;
+        let name = `pixelated_s${scale}`;
+        if (palette !== 'none') {
+          name += `_${palette}`;
+        } else {
+          name += `_b${bitDepth}`;
+        }
+        return name;
+      }
+
+      // Download button event listeners
+      document.getElementById('download-1x').addEventListener('click', () => {
+        if (processedCanvas) {
+          downloadCanvasAsPNG(processedCanvas, 1, `${getFilenameBase()}_1x.png`);
+        }
+      });
+
+      document.getElementById('download-2x').addEventListener('click', () => {
+        if (processedCanvas) {
+          downloadCanvasAsPNG(processedCanvas, 2, `${getFilenameBase()}_2x.png`);
+        }
+      });
+
+      document.getElementById('download-4x').addEventListener('click', () => {
+        if (processedCanvas) {
+          downloadCanvasAsPNG(processedCanvas, 4, `${getFilenameBase()}_4x.png`);
+        }
+      });
+
+      document.getElementById('download-8x').addEventListener('click', () => {
+        if (processedCanvas) {
+          downloadCanvasAsPNG(processedCanvas, 8, `${getFilenameBase()}_8x.png`);
+        }
+      });
+
+      document.getElementById('download-all').addEventListener('click', async () => {
+        if (!processedCanvas) return;
+
+        const base = getFilenameBase();
+        const sizes = [];
+        if (document.getElementById('export-1x').checked) sizes.push(1);
+        if (document.getElementById('export-2x').checked) sizes.push(2);
+        if (document.getElementById('export-4x').checked) sizes.push(4);
+        if (document.getElementById('export-8x').checked) sizes.push(8);
+
+        // Download sequentially to avoid race conditions
+        for (const size of sizes) {
+          try {
+            await downloadCanvasAsPNG(processedCanvas, size, `${base}_${size}x.png`);
+            // Small delay between downloads for browser stability
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (error) {
+            console.error(`Failed to download ${size}x:`, error);
+            // Continue with remaining downloads even if one fails
+          }
+        }
+      });
+
+      document.getElementById('export-css').addEventListener('click', () => {
+        exportToCssShadowPixelImage();
+      });
 
       </script>
   </body>
